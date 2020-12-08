@@ -98,3 +98,21 @@ hist(sqrthhsize)
 #Total people in Household transformation: Square root (can delete this one as we already have tamviv. Tamviv p-value = 0.02 and hogar_total = NA)
 sqrthogar_total <- sqrt(project_data$hogar_total)
 hist(sqrthogar_total)
+
+#Split data into 60/40 training/testing
+data("project_data", package="MASS")
+set.seed(1234)
+training.samples <- project_data$Target 
+  createDataPartition(p=0.6, list=FALSE)
+train.data <- project_data[training.samples, ]
+test.data <- project_data[-training.samples, ]
+
+#Build regression model using training/testing
+model1 <- lm(Target ~ ., data=train.data)
+predictions <- model1 %>% predict(test.data)
+data.frame(
+  RMSE = RMSE(predictions, test.data$Target)
+,
+  R2 = R2(predictions, test.data$Target)
+)
+car::vif(model1)
