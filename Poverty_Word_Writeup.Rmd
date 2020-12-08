@@ -14,3 +14,73 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ## Exploring and Transforming the Data
+library(tidyverse) 
+library(ggrepel) 
+library(kableExtra) 
+library(RColorBrewer) 
+library(corrplot) 
+library(caret) 
+library(e1071) 
+library(dominanceanalysis) 
+library("readxl")
+
+
+project_data = read_excel("HeadOfHouseHoldFile.xlsx")
+head(project_data)
+
+povglm <- glm(Target ~ ., data = project_data) #GLM Function
+summary(povglm)
+
+#Plotting quantatative variables -> transformations
+
+#Rooms Plot (normal)
+roomcounts <- table(project_data$rooms)
+barplot(roomcounts,main="Number of Rooms", xlab="Room Counts")
+
+#Number of Tablets Plot (heavy skew right)
+tabletscounts <- table(project_data$v18q1)
+barplot(tabletscounts,main="Number of Tablets", xlab="Tablet Counts")
+
+#Number of People in Household Plot (skew right)
+peoplecounts <- table(project_data$tamviv)
+barplot(peoplecounts, main="Number of People in Household", xlab="People Counts")
+          
+#Household Size Plot (small skew right)
+hhsizecounts <- table(project_data$hhsize)
+barplot(hhsizecounts, main="Household Size", xlab="Household Size Counts")
+
+#Children 0-19 Plot (skew right)
+childrencounts <- table(project_data$hogar_nin)
+barplot(childrencounts, main="Number of Children 0-19", xlab="Children Counts")
+
+#Number of Adults Plot (small skew right)
+adultcounts <- table(project_data$hogar_adul)
+barplot(adultcounts, main="Number of Adults", xlab="Adult Counts")
+
+#People 65+ Plot (heavy skew right)
+people65counts <- table(project_data$hogar_mayor)
+barplot(people65counts, main="People 65+", xlab = "People Counts")
+
+#Total People in Household Plot (small skew right)
+totalpeoplecounts <- table(project_data$hogar_total)
+barplot(totalpeoplecounts, main="Total People in Household", xlab="People Counts")
+
+#EdJefe Plot (weird)
+edjefecounts <- table(project_data$edjefe)
+barplot(edjefecounts, main="Ed Jefe Counts", xlab = "Counts")
+
+#EdJefa Plot (weird)
+edjefacounts <- table(project_data$edjefa)
+barplot(edjefacounts, main="Ed Jefa Counts", xlab="Counts")
+
+#Mean Education Plot (weird)
+meaneducounts <- table(project_data$meaneduc)
+barplot(meaneducounts, main="Mean Education", xlab="Counts")
+
+#Overcrowding Plot (weird)
+overcrowdcounts <- table(project_data$overcrowding)
+barplot(overcrowdcounts, main="Overcrowding", xlab="Counts")
+
+#Number of Dependents (weird)
+dependcounts <- table(project_data$depend)
+barplot(dependcounts, main="Dependencies", xlab="Counts")
