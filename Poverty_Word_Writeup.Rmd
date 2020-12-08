@@ -95,6 +95,6 @@ hist(sqrttamviv)
 sqrthhsize <- sqrt(project_data$hhsize)
 hist(sqrthhsize)
 
-#Total people in Household transformation: Square root (can delete this one as we already have tamviv)
+#Total people in Household transformation: Square root (can delete this one as we already have tamviv. Tamviv p-value = 0.02 and hogar_total = NA)
 sqrthogar_total <- sqrt(project_data$hogar_total)
 hist(sqrthogar_total)
