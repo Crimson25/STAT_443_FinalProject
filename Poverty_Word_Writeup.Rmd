@@ -84,3 +84,17 @@ barplot(overcrowdcounts, main="Overcrowding", xlab="Counts")
 #Number of Dependents (weird)
 dependcounts <- table(project_data$depend)
 barplot(dependcounts, main="Dependencies", xlab="Counts")
+
+#TRANSFORMATIONS: All variables without code are either factors or couldn't be done using log, sqrt, or cube root. Rooms and Number of Adults are normal.
+
+#Number of people in Household transformation: Square root 
+sqrttamviv <- (sqrt(project_data$tamviv))
+hist(sqrttamviv)
+
+#Household Size transformation: Square root 
+sqrthhsize <- sqrt(project_data$hhsize)
+hist(sqrthhsize)
+
+#Total people in Household transformation: Square root (can delete this one as we already have tamviv)
+sqrthogar_total <- sqrt(project_data$hogar_total)
+hist(sqrthogar_total)
