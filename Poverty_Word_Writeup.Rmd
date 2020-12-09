@@ -28,6 +28,35 @@ library("readxl")
 project_data = read_excel("HeadOfHouseHoldFile.xlsx")
 head(project_data)
 
+
+##CLEAN UP DATA
+#removes reference variables
+project_data %>% dplyr::select(-c("hhsize", "hogar_total", "", "", "", "","")) #we can put columns names in here
+project_data$edjefe <- as.integer(project_data$edjefe) #change these two variables from char to ints for analyses
+project_data$edjefa <- as.integer(project_data$edjefa)
+
+apply(is.na(project_data), 2, which) #detects NAs in data frame, 3 values in meaneduc (1287, 1400, 1455), 1 value in depend (1287)
+project_data[is.na(project_data)]=0  #replaces NAs with 0 
+project_data <- project_data %>% mutate(hogar_nin=replace(hogar_nin, hogar_nin==0, .001)) #how we can change variables with zero for transformations
+
+##CORRELATIONS
+quantvars <- c(1,2,3,4,26,27,28,29,32,33,36,39) #we'll need to update these
+categorvars <- c(5,6,7,8) #we'll need to update these
+
+#shows top correlated variables
+z <-cor(project_data[,quantvars])
+z[lower.tri(z,diag=TRUE)]=NA 
+z2=as.data.frame(as.table(z))  
+z3=na.omit(z2) 
+z4 <- subset(z3, abs(Freq)> .5) 
+correlation_df <- z4[order(-z4$Freq), ]
+correlation_df
+
+library(PerformanceAnalytics)
+chart.Correlation(project_data[,quantvars],histogram = FALSE) #correlations for quantitative variables
+chart.Correlation(project_data[,categorvars],histogram = FALSE, method = "spearman") #correlations for categorical variables
+
+
 povglm <- glm(Target ~ ., data = project_data) #GLM Function
 summary(povglm)
 
