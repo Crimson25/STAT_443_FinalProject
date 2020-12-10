@@ -28,23 +28,27 @@ library("readxl")
 project_data = read_excel("HeadOfHouseHoldFile.xlsx")
 head(project_data)
 
+project_data2 <- read_excel("HeadOfHouseHoldFileUpdate.xlsx")
+head(project_data2)
 
 ##CLEAN UP DATA
 #removes reference variables
-project_data %>% dplyr::select(-c("hhsize", "hogar_total", "", "", "", "","")) #we can put columns names in here
-project_data$edjefe <- as.integer(project_data$edjefe) #change these two variables from char to ints for analyses
-project_data$edjefa <- as.integer(project_data$edjefa)
+project_data2 <- project_data2 %>% dplyr::select(-c("paredblolad","paredpreb", "energcocinar2", "energcocinar3", "Married/Free Coupled", "div,sep,wid", "single", "parentesco1"))
+project_data2$edjefe <- as.integer(project_data2$edjefe) #to change these two variables from char to ints
+project_data2$edjefa <- as.integer(project_data2$edjefa)
 
-apply(is.na(project_data), 2, which) #detects NAs in data frame, 3 values in meaneduc (1287, 1400, 1455), 1 value in depend (1287)
-project_data[is.na(project_data)]=0  #replaces NAs with 0 
+apply(is.na(project_data2), 2, which) #detects NAs in data frame, 3 values in meaneduc (1287, 1400, 1455), 1 value in depend (1287)
+project_data2[is.na(project_data2)]=0  #replaces NAs with 0 
+
 project_data <- project_data %>% mutate(hogar_nin=replace(hogar_nin, hogar_nin==0, .001)) #how we can change variables with zero for transformations
 
-##CORRELATIONS
-quantvars <- c(1,2,3,4,26,27,28,29,32,33,36,39) #we'll need to update these
-categorvars <- c(5,6,7,8) #we'll need to update these
+quantvars <- c(1,2,3,13,14,15,16,17,18,19,22,25)  #updated: of project_data2
+categorvars <- c(4,5,6,7,8,9,10,11,12,20,21,23)   #updated: of project_data2
 
+##RELATIONSHIPS
+##CORRELATIONS (relationships beween predictors)
 #shows top correlated variables
-z <-cor(project_data[,quantvars])
+z <-cor(project_data2[,quantvars])
 z[lower.tri(z,diag=TRUE)]=NA 
 z2=as.data.frame(as.table(z))  
 z3=na.omit(z2) 
@@ -53,8 +57,40 @@ correlation_df <- z4[order(-z4$Freq), ]
 correlation_df
 
 library(PerformanceAnalytics)
-chart.Correlation(project_data[,quantvars],histogram = FALSE) #correlations for quantitative variables
-chart.Correlation(project_data[,categorvars],histogram = FALSE, method = "spearman") #correlations for categorical variables
+chart.Correlation(project_data2[,quantvars],histogram = FALSE) #correlations for quantitative variables
+chart.Correlation(project_data2[,categorvars],histogram = FALSE, method = "spearman") #correlations for categorical variables
+
+##RELATIONSHIPS BETWEEN PREDICTORS AND RESPONSE
+library(gridExtra)
+#Function for creating bar graphs (of all quantitative variables) by target
+graphs <- function(x){
+xvar <- unlist(project_data2[,x])
+plot <- project_data2 %>% ggplot(aes(xvar,fill=Target))+ 
+  geom_bar() + 
+  facet_grid(. ~ Target) +
+  xlab(colnames(project_data2[x]))
+return(plot)
+}
+plot_list <-lapply(quantvars,FUN=graphs)
+plot list
+
+#Function for creating FREQUENCY graphs (of all quantitative variables) by target
+freqgraphs <- function(x){
+xvar <- unlist(project_data2[,x])
+plot <- project_data2 %>% ggplot(aes(xvar, colour=Target)) + 
+  geom_freqpoly(aes(group = Target)) +
+  xlab(colnames(project_data2[x]))
+return(plot)
+}
+freqplot_list <-lapply(quantvars,FUN=freqgraphs)
+freqplot_list
+
+
+
+
+
+
+
 
 
 povglm <- glm(Target ~ ., data = project_data) #GLM Function
