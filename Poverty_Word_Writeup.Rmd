@@ -11,9 +11,12 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Introduction
+The objective of this study is to determine an appropriate logistic regression model in order to classify individuals into one of four poverty levels. Many social programs have a hard time making sure the right people are given enough aid. Often times the poorest of the population might not be given enough aid because they typically cannot provide the necessary income and expense records to prove that they qualify. Instead, this study will consider a family’s observable household attributes such as the material of their walls and ceiling, or the assets found in the home, to classify poverty levels. The original dataset contains survey responses from 9,057 individuals with 142 predictor variables. For purposes of this study, only data from the "heads of household" will be used which focuses the data down to 2,819 observations. 
 
+In order to find a sufficient model, all of the predictor variables will be assessed for repetitiveness and skewness and potentially transformed. Relationships between predictor variables and poverty level as well as between the different predictor variables will need to be evaluated. This will help determine any preliminary multicollinearity issues so that these variables can be removed from the dataset early. The data will be split into a training data set as well as a validation data set in order to test the accuracy of our model. A logistic regression model will be created using the training data. The model will then be used to predict the poverty level of samples to determine the effectiveness of the model. The model selection tools will be used to determine if more accuracy is gained through a new model. Next, the classification threshold will be investigated to determine which value optimizes accuracy. The final model will be determined based off of these analyses in hopes to have an appropriate model to classify individuals into a poverty class. 
 
 ## Exploring and Transforming the Data
+```{r message=FALSE, warning=FALSE, echo=FALSE, include=FALSE}
 library(tidyverse) 
 library(ggrepel) 
 library(kableExtra) 
@@ -170,3 +173,8 @@ train.index <- sample(row.names(project_data), 0.75*dim(project_data)[1])
 valid.index <- setdiff(row.names(project_data), train.index) 
 train.df <- project_data[train.index,]
 valid.df <- project_data[valid.index,]
+
+```
+
+
+
