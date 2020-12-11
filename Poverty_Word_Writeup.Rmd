@@ -178,4 +178,110 @@ valid.df <- project_data[valid.index,]
 ```
 
 
+## The Statistical Model
+```{r message=FALSE, warning=FALSE, echo=FALSE, include=FALSE}
+
+#split data into raining and testing set
+set.seed(46217921)
+train.pov <- sample(1:nrow(project_data2), floor(.75*nrow(project_data2)), replace=F)
+dat.tr <- project_data2[train.pov,]
+dat.te <- project_data2[-train.pov,]
+head(dat.tr)
+
+#INITIAL MODEL W/O REMOVING MORE VARIABLES
+library(nnet)
+mod.full <- multinom(Target ~ ., data=dat.tr) #Multinom Function
+summary(mod.full)
+
+library(caret)
+#ACCURACY OF TRAINING DATA = .702
+predictedML <- predict(mod.full,dat.tr,na.action =na.pass, type="class")
+predicted_classML <- predict(mod.full,dat.tr)
+caret::confusionMatrix(as.factor(predicted_classML),as.factor(dat.tr$Target))
+
+#ACCURACY OF TESTING DATA = .6397
+predictedML <- predict(mod.full,dat.te,na.action =na.pass, type="class")
+predicted_classML <- predict(mod.full,dat.te)
+caret::confusionMatrix(as.factor(predicted_classML),as.factor(dat.te$Target))
+
+#ORDINAL MODEL 
+library(MASS)
+library(ordinal)
+library(erer)
+dat.tr$Target <- ordered(dat.tr$Target, levels = c(1,2,3,4))
+dat.te$Target <- ordered(dat.te$Target, levels = c(1,2,3,4))
+ord<-clm(formula= (Target~ .), data= dat.tr)
+summary(ord)
+
+#ACCURACY of ordinal model #1 (training) =.6944
+predicted_class<- predict (ord, dat.tr, type = "class")
+predicted_class<- ordered(predicted_class$fit, levels = c(1,2,3,4))
+cm_ols <- table(predicted_class, dat.tr$Target)
+print(cm_ols)
+Accuracytr <- sum(diag(cm_ols))/sum(cm_ols)
+Accuracytr
+
+#ACCURACY of ordinal model #1 (testing) = .6496
+predicted_class<- predict (ord, dat.te, type = "class")
+predicted_class<- ordered(predicted_class$fit, levels = c(1,2,3,4))
+cm_ols <- table(predicted_class, dat.te$Target)
+print(cm_ols)
+Accuracyte <- sum(diag(cm_ols))/sum(cm_ols)
+Accuracyte
+
+#removed insignificant variables from ord to build ord2
+ord2 <- clm(formula = (Target~ v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + etecho1 + dis + hogar_mayor + edjefe + meaneduc + television + qmobilephone + area1 + depend), data = dat.tr)
+summary(ord2)
+
+#ACCURACY of ordinal model #2 (training) =.6939
+predicted_class<- predict (ord2, dat.tr, type = "class")
+predicted_class<- ordered(predicted_class$fit, levels = c(1,2,3,4))
+cm_ols <- table(predicted_class, dat.tr$Target)
+print(cm_ols)
+Accuracytr <- sum(diag(cm_ols))/sum(cm_ols)
+Accuracytr
+
+#ACCURACY of ordinal model #2 (testing) = .6440
+predicted_class<- predict (ord2, dat.te, type = "class")
+predicted_class<- ordered(predicted_class$fit, levels = c(1,2,3,4))
+cm_ols <- table(predicted_class, dat.te$Target)
+print(cm_ols)
+Accuracyte <- sum(diag(cm_ols))/sum(cm_ols)
+Accuracyte
+
+#Cumulative Logit Model (reflects ordering)
+library(VGAM)
+fit.adj <- vglm(Target ~ .,family=acat(reverse=TRUE, parallel=TRUE), data=dat.tr)
+coef(fit.adj)
+predict.te <- predict(fit.adj,dat.te, type = "response")
+
+#LASSO MODEL  - suggests to take out hogar_nin and edjefa
+library(glmnet)
+xx <- model.matrix(Target~., dat.tr)
+yy <- as.integer(dat.tr$Target) #packages requires this to be numeric
+lasso.out <- cv.glmnet(xx, yy, alpha=1, type.measure="class")
+coef(lasso.out, s=lasso.out$lambda.min)
+
+#Ridge MODEL  - doesn't suggest to take any variables out?
+library(glmnet)
+xx <- model.matrix(Target~., dat.tr)
+yy <- as.integer(dat.tr$Target) #packages requires this to be numeric
+ridge.out <- cv.glmnet(xx, yy, alpha=0, type.measure="class")
+coef(ridge.out, s=lasso.out$lambda.min)
+
+#Backward Selection - significant variables in equation below
+#multinom(formula = Target ~ v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + etecho1 + eviv1 + dis + hogar_mayor + edjefe + meaneduc + television + qmobilephone + area1 + depend, data = dat.tr)
+mod.back <- step(mod.full,  direction="backward", trace=0)
+test <- predict.glm(mod.back, type="response")
+summary(mod.back)
+
+#Backward Selection - significant variables in equation below
+#multinom(formula = Target ~ rooms + v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + elimbasu1 + epared1 + etecho1 + eviv1 + dis + comMSS + hogar_nin + hogar_adul + hogar_mayor + edjefe + edjefa + meaneduc + overcrowding + computer + television + qmobilephone + area1 + depend, data = dat.tr)
+mod.back <- step(mod.full,  direction="forward", trace=0)
+test <- predict.glm(mod.back, type="response")
+summary(mod.back)
+
+```
+
+
 
