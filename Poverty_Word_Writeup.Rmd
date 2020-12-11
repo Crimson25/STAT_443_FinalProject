@@ -37,11 +37,12 @@ head(project_data2)
 ##CLEAN UP DATA
 #removes reference variables
 project_data2 <- project_data2 %>% dplyr::select(-c("paredblolad","paredpreb", "energcocinar2", "energcocinar3", "Married/Free Coupled", "div,sep,wid", "single", "parentesco1"))
-project_data2$edjefe <- as.integer(project_data2$edjefe) #to change these two variables from char to ints
-project_data2$edjefa <- as.integer(project_data2$edjefa)
 
 apply(is.na(project_data2), 2, which) #detects NAs in data frame, 3 values in meaneduc (1287, 1400, 1455), 1 value in depend (1287)
 project_data2[is.na(project_data2)]=0  #replaces NAs with 0 
+
+project_data2$edjefe <- as.integer(project_data2$edjefe) #to change these two variables from char to ints
+project_data2$edjefa <- as.integer(project_data2$edjefa)
 
 project_data <- project_data %>% mutate(hogar_nin=replace(hogar_nin, hogar_nin==0, .001)) #how we can change variables with zero for transformations
 
