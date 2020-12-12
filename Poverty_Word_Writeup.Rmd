@@ -195,14 +195,29 @@ summary(mod.full)
 
 library(caret)
 #ACCURACY OF TRAINING DATA = .702
-predictedML <- predict(mod.full,dat.tr,na.action =na.pass, type="class")
-predicted_classML <- predict(mod.full,dat.tr)
+predictedFM <- predict(mod.full,dat.tr,na.action =na.pass, type="class")
+predicted_classFM <- predict(mod.full,dat.tr)
 caret::confusionMatrix(as.factor(predicted_classML),as.factor(dat.tr$Target))
 
 #ACCURACY OF TESTING DATA = .6397
 predictedML <- predict(mod.full,dat.te,na.action =na.pass, type="class")
 predicted_classML <- predict(mod.full,dat.te)
 caret::confusionMatrix(as.factor(predicted_classML),as.factor(dat.te$Target))
+
+#SENSITIVITIES, SPECIFICITIES, AND AUC of initial full model
+library(multiROC)
+dat_roc <- data.frame(T1_true = numeric(2114),T2_true= numeric(2114),T3_true= numeric(2114),T4_true= numeric(2114),T1_pred_FM= numeric(2114),T2_pred_FM= numeric(2114),T3_pred_FM= numeric(2114),T4_pred_FM= numeric(2114))
+#creates data frame in form needed for multi_roc function
+dat_roc$T1_true <- ifelse(dat.tr$Target == 1, 1, 0)
+dat_roc$T2_true <- ifelse(dat.tr$Target == 2, 1, 0)
+dat_roc$T3_true <- ifelse(dat.tr$Target == 3, 1, 0)
+dat_roc$T4_true <- ifelse(dat.tr$Target == 4, 1, 0)
+dat_roc$T1_pred_FM <- ifelse(preds.tr == 1, 1, 0)
+dat_roc$T2_pred_FM <- ifelse(preds.tr == 2, 1, 0)
+dat_roc$T3_pred_FM <- ifelse(preds.tr == 3, 1, 0)
+dat_roc$T4_pred_FM <- ifelse(preds.tr == 4, 1, 0)
+
+rocfit.full <- multi_roc(dat_roc)
 
 #ORDINAL MODEL 
 library(MASS)
@@ -218,16 +233,16 @@ predicted_class<- predict (ord, dat.tr, type = "class")
 predicted_class<- ordered(predicted_class$fit, levels = c(1,2,3,4))
 cm_ols <- table(predicted_class, dat.tr$Target)
 print(cm_ols)
-Accuracytr <- sum(diag(cm_ols))/sum(cm_ols)
-Accuracytr
+Accuracytr1 <- sum(diag(cm_ols))/sum(cm_ols)
+Accuracytr1
 
 #ACCURACY of ordinal model #1 (testing) = .6496
 predicted_class<- predict (ord, dat.te, type = "class")
 predicted_class<- ordered(predicted_class$fit, levels = c(1,2,3,4))
 cm_ols <- table(predicted_class, dat.te$Target)
 print(cm_ols)
-Accuracyte <- sum(diag(cm_ols))/sum(cm_ols)
-Accuracyte
+Accuracyte1 <- sum(diag(cm_ols))/sum(cm_ols)
+Accuracyte1
 
 #removed insignificant variables from ord to build ord2
 ord2 <- clm(formula = (Target~ v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + etecho1 + dis + hogar_mayor + edjefe + meaneduc + television + qmobilephone + area1 + depend), data = dat.tr)
@@ -238,16 +253,16 @@ predicted_class<- predict (ord2, dat.tr, type = "class")
 predicted_class<- ordered(predicted_class$fit, levels = c(1,2,3,4))
 cm_ols <- table(predicted_class, dat.tr$Target)
 print(cm_ols)
-Accuracytr <- sum(diag(cm_ols))/sum(cm_ols)
-Accuracytr
+Accuracytr2 <- sum(diag(cm_ols))/sum(cm_ols)
+Accuracytr2
 
 #ACCURACY of ordinal model #2 (testing) = .6440
 predicted_class<- predict (ord2, dat.te, type = "class")
 predicted_class<- ordered(predicted_class$fit, levels = c(1,2,3,4))
 cm_ols <- table(predicted_class, dat.te$Target)
 print(cm_ols)
-Accuracyte <- sum(diag(cm_ols))/sum(cm_ols)
-Accuracyte
+Accuracyte2 <- sum(diag(cm_ols))/sum(cm_ols)
+Accuracyte2
 
 #Cumulative Logit Model (reflects ordering)
 library(VGAM)
@@ -275,7 +290,7 @@ mod.back <- step(mod.full,  direction="backward", trace=0)
 test <- predict.glm(mod.back, type="response")
 summary(mod.back)
 
-#Backward Selection - significant variables in equation below
+#Forward Selection - significant variables in equation below
 #multinom(formula = Target ~ rooms + v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + elimbasu1 + epared1 + etecho1 + eviv1 + dis + comMSS + hogar_nin + hogar_adul + hogar_mayor + edjefe + edjefa + meaneduc + overcrowding + computer + television + qmobilephone + area1 + depend, data = dat.tr)
 mod.back <- step(mod.full,  direction="forward", trace=0)
 test <- predict.glm(mod.back, type="response")
