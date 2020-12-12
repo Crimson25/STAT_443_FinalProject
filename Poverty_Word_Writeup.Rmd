@@ -282,7 +282,7 @@ library(glmnet)
 xx <- model.matrix(Target~., dat.tr)
 yy <- as.integer(dat.tr$Target) #packages requires this to be numeric
 ridge.out <- cv.glmnet(xx, yy, alpha=0, type.measure="class")
-coef(ridge.out, s=lasso.out$lambda.min)
+coef(ridge.out, s=ridge.out$lambda.min)
 
 #Backward Selection - significant variables in equation below
 #multinom(formula = Target ~ v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + etecho1 + eviv1 + dis + hogar_mayor + edjefe + meaneduc + television + qmobilephone + area1 + depend, data = dat.tr)
