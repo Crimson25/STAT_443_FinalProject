@@ -90,17 +90,7 @@ freqplot_list <-lapply(quantvars,FUN=freqgraphs)
 freqplot_list
 
 
-
-
-
-
-
-
-
-povglm <- glm(Target ~ ., data = project_data) #GLM Function
-summary(povglm)
-
-#Plotting quantatative variables -> transformations
+#PLOTTING QUANT VARIABLES -> TRANSFORMATIONS
 
 #Rooms Plot (normal)
 roomcounts <- table(project_data$rooms)
