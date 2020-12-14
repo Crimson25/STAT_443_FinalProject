@@ -168,49 +168,186 @@ hist(sqrthogar_total)
 
 #split data into raining and testing set
 set.seed(46217921)
-train.pov <- sample(1:nrow(project_data2), floor(.75*nrow(project_data2)), replace=F)
+train.pov <- sample(1:nrow(project_data_final), floor(.75*nrow(project_data_final)), replace=F)
 dat.tr <- project_data2[train.pov,]
 dat.te <- project_data2[-train.pov,]
 head(dat.tr)
+table(dat.tr$Target) #.66556 proportions are target 4
+table(dat.te$Target) #.626995 proportions are target 4
 
-#INITIAL MODEL W/O REMOVING MORE VARIABLES
+
 library(nnet)
-mod.full <- multinom(Target ~ ., data=dat.tr) #Multinom Function
-summary(mod.full)
-
+library(MLmetrics)
+library(compositions)
 library(caret)
+
+#Build regression model using training/testing
+mod.full <- multinom(Target ~ ., data=dat.tr) #Multinom Function
+
+#gives VIF values of each variable in the full model: want to remove variables with VIF higher than 5-10, for this analyses the following remain after removing higher than 10: v18q1,CementorBetter, cielorazo, epared1, etecho1, eviv1, dis, computer, television, area1
+car::vif(mod.full)
+
+#Finds pseudo R^2 value of model
+library(DescTools)
+PseudoR2(mod.full,"McFadden") # R^2 = .22619
+
+#ACCURACY OF TRAINING DATA - Full Multinomial Model = .702
+predicted_classFM_TR <- predict(mod.full,dat.tr)
+caret::confusionMatrix(as.factor(predicted_classFM_TR),as.factor(dat.tr$Target))
+
+#ACCURACY OF TESTING DATA - Full Multinomial Model= .6397
+predicted_classFM_TE <- predict(mod.full,dat.te)
+caret::confusionMatrix(as.factor(predicted_classFM_TE),as.factor(dat.te$Target))
+
+#SENSITIVITIES, SPECIFICITIES, AND AUC - FUll Multinomial Model
+dat_roc_FM_TR<- data.frame(T1_true = numeric(2114),T2_true= numeric(2114),T3_true= numeric(2114),T4_true= numeric(2114),T1_pred_FM= numeric(2114),T2_pred_FM= numeric(2114),T3_pred_FM= numeric(2114),T4_pred_FM= numeric(2114))
+#creates data frame in form needed for multi_roc function
+dat_roc_FM_TR$T1_true <- ifelse(dat.tr$Target == 1, 1, 0)
+dat_roc_FM_TR$T2_true <- ifelse(dat.tr$Target == 2, 1, 0)
+dat_roc_FM_TR$T3_true <- ifelse(dat.tr$Target == 3, 1, 0)
+dat_roc_FM_TR$T4_true <- ifelse(dat.tr$Target == 4, 1, 0)
+dat_roc_FM_TR$T1_pred_FM <- ifelse(predicted_classFM_TR == 1, 1, 0)
+dat_roc_FM_TR$T2_pred_FM <- ifelse(predicted_classFM_TR == 2, 1, 0)
+dat_roc_FM_TR$T3_pred_FM <- ifelse(predicted_classFM_TR == 3, 1, 0)
+dat_roc_FM_TR$T4_pred_FM <- ifelse(predicted_classFM_TR == 4, 1, 0)
+
+rocfit.full_FM_TR <- multi_roc(dat_roc_FM_TR)
+rocfit.full_FM_TR$AUC
+
+
+##Multinomial Model #2
+mod.vif_under_10 <-multinom(Target~v18q1 + CementorBetter + cielorazo + epared1 + etecho1 + eviv1 + dis + computer + television + area1, data = dat.tr)
+
+car::vif(mod.vif_under_10)
+PseudoR2(mod.vif_under_10,"all") # R^2 = .1026
+
+#ACCURACY OF TRAINING DATA - VIF Under 10 Multinomial Model = .6712
+predicted_classFM2_TR <- predict(mod.vif_under_10,dat.tr)
+caret::confusionMatrix(as.factor(predicted_classFM2_TR),as.factor(dat.tr$Target))
+
+#ACCURACY OF TESTING DATA - VIF Under 10 Multinomial Model= .6241
+predicted_classFM2_TE <- predict(mod.vif_under_10,dat.te)
+caret::confusionMatrix(as.factor(predicted_classFM2_TE),as.factor(dat.te$Target))
+
+#SENSITIVITIES, SPECIFICITIES, AND AUC - Multinomial Model #2
+dat_roc_FM2_TR<- data.frame(T1_true = numeric(2114),T2_true= numeric(2114),T3_true= numeric(2114),T4_true= numeric(2114),T1_pred_FM2= numeric(2114),T2_pred_FM2= numeric(2114),T3_pred_FM2= numeric(2114),T4_pred_FM2= numeric(2114))
+#creates data frame in form needed for multi_roc function
+dat_roc_FM2_TR$T1_true <- ifelse(dat.tr$Target == 1, 1, 0)
+dat_roc_FM2_TR$T2_true <- ifelse(dat.tr$Target == 2, 1, 0)
+dat_roc_FM2_TR$T3_true <- ifelse(dat.tr$Target == 3, 1, 0)
+dat_roc_FM2_TR$T4_true <- ifelse(dat.tr$Target == 4, 1, 0)
+dat_roc_FM2_TR$T1_pred_FM <- ifelse(predicted_classFM2_TR == 1, 1, 0)
+dat_roc_FM2_TR$T2_pred_FM <- ifelse(predicted_classFM2_TR == 2, 1, 0)
+dat_roc_FM2_TR$T3_pred_FM <- ifelse(predicted_classFM2_TR == 3, 1, 0)
+dat_roc_FM2_TR$T4_pred_FM <- ifelse(predicted_classFM2_TR == 4, 1, 0)
+
+rocfit.full_FM2_TR <- multi_roc(dat_roc_FM2_TR)
+rocfit.full_FM2_TR$AUC
+```
+
+```{r}
+#Cumulative Logit Model - Reflects ordering - NOT WORKING
+library(VGAM)
+fit.adj <- vglm(Target ~ .,family=cumulative(parallel=TRUE), data=dat.tr)
+coef(fit.adj)
+predict.te <- predict(fit.adj,dat.te, type = "response")
+
+#ACCURACY OF TRAINING DATA =
+predicted_classVGLM <- predict(fit.adj,dat.tr)
+caret::confusionMatrix(as.factor(predicted_classVGLM),as.factor(dat.tr$Target))
+
+#ACCURACY OF TESTING DATA =
+predicted_classVGLM <- predict(mod.full,dat.te)
+caret::confusionMatrix(as.factor(predicted_classML),as.factor(dat.te$Target))
+```
+
+```{r}
+#LASSO MODEL  - suggests to take out hogar_nin and edjefa
+library(glmnet)
+xx <- model.matrix(Target~., dat.tr)
+yy <- as.integer(dat.tr$Target) #packages requires this to be numeric
+lasso.out <- cv.glmnet(xx, yy, alpha=1, family = "multinomial", type.multinomial = "grouped", type.measure="class")  #do we need to set this family to multinomial?
+coef(lasso.out, s=lasso.out$lambda.min)
+
+#ACCURACY OF TRAINING DATA = .7001
+mod.lasso.tr <- multinom(formula = Target ~ rooms + v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + elimbasu1 + epared1 + etecho1 + eviv1 + dis + comMSS + hogar_adul + hogar_mayor + edjefe + meaneduc + overcrowding + computer + television + qmobilephone + area1 + depend, data = dat.tr)
+predicted_classLM_TR <- predict(mod.lasso.tr, type="class")
+acc_LM_TR <- caret::confusionMatrix(as.factor(predicted_classLM_TR),as.factor(dat.tr$Target))
+
+#ACCURACY OF Testing DATA = .6695
+mod.lasso.te <- multinom(formula = Target ~ rooms + v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + elimbasu1 + epared1 + etecho1 + eviv1 + dis + comMSS + hogar_adul + hogar_mayor + edjefe + meaneduc + overcrowding + computer + television + qmobilephone + area1 + depend, data = dat.te)
+predicted_classLM_TE <- predict(mod.lasso.te, type="class")
+acc_LM_TE <- caret::confusionMatrix(as.factor(predicted_classLM_TE),as.factor(dat.te$Target))
+
+#SENSITIVITIES, SPECIFICITIES, AND AUC of LASSO
+dat_roc_te_LM <- data.frame(T1_true = numeric(705),T2_true= numeric(705),T3_true= numeric(705),T4_true= numeric(705),T1_pred_LM= numeric(705),T2_pred_LM= numeric(705),T3_pred_LM= numeric(705),T4_pred_LM= numeric(705))
+#creates data frame in form needed for multi_roc function
+dat_roc_te_LM$T1_true <- ifelse(dat.te$Target == 1, 1, 0)
+dat_roc_te_LM$T2_true <- ifelse(dat.te$Target == 2, 1, 0)
+dat_roc_te_LM$T3_true <- ifelse(dat.te$Target == 3, 1, 0)
+dat_roc_te_LM$T4_true <- ifelse(dat.te$Target == 4, 1, 0)
+dat_roc_te_LM$T1_pred_LM <- ifelse(predicted_classLM_TE == 1, 1, 0)
+dat_roc_te_LM$T2_pred_LM <- ifelse(predicted_classLM_TE == 2, 1, 0)
+dat_roc_te_LM$T3_pred_LM <- ifelse(predicted_classLM_TE == 3, 1, 0)
+dat_roc_te_LM$T4_pred_LM <- ifelse(predicted_classLM_TE == 4, 1, 0)
+
+rocfit.full_te_LM<- multi_roc(dat_roc_te_LM)
+rocfit.full_te_LM$AUC
+```
+
+```{r}
+#Ridge MODEL  - doesn't suggest to take any variables out?
+xxR <- model.matrix(Target~., dat.tr)
+yyR <- as.integer(dat.tr$Target) #packages requires this to be numeric
+ridge.out <- cv.glmnet(xxR, yyR, alpha=0, type.measure="class") 
+coef(ridge.out, s=ridge.out$lambda.min)
+
+#same accuracies as full multinomial model?
+#Training Accuracy = .702
+#Testing Accuracy = .6397
+
+```
+
+```{r}
+#Backward Selection - significant variables in equation below
+#multinom(formula = Target ~ v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + etecho1 + eviv1 + dis + hogar_mayor + edjefe + meaneduc + television + qmobilephone + area1 + depend, data = dat.tr)
+mod.back <- step(mod.full,  direction="backward", trace=0)
+summary(mod.back)
+
+#ACCURACY OF TRAINING DATA = .6991
+predicted_classBS_TR <- predict(mod.back,dat.tr)
+caret::confusionMatrix(as.factor(predicted_classBS_TR),as.factor(dat.tr$Target))
+
+#ACCURACY OF TESTING DATA = .6383
+predicted_classBS_TE <- predict(mod.back,dat.te)
+caret::confusionMatrix(as.factor(predicted_classBS_TE),as.factor(dat.te$Target))
+```
+
+```{r}
+#Forward Selection - didn't remove any variables? Equation below
+#multinom(formula = Target ~ rooms + v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + elimbasu1 + epared1 + etecho1 + eviv1 + dis + comMSS + hogar_nin + hogar_adul + hogar_mayor + edjefe + edjefa + meaneduc + overcrowding + computer + television + qmobilephone + area1 + depend, data = dat.tr)
+mod.forward <- step(mod.full, direction="forward", trace=0)
+test <- predict(mod.forward, type="class")
+summary(mod.forward)
+
 #ACCURACY OF TRAINING DATA = .702
-predictedFM <- predict(mod.full,dat.tr,na.action =na.pass, type="class")
-predicted_classFM <- predict(mod.full,dat.tr)
-caret::confusionMatrix(as.factor(predicted_classML),as.factor(dat.tr$Target))
+predicted_classFS_TR <- predict(mod.forward,dat.tr)
+caret::confusionMatrix(as.factor(predicted_classFS_TR),as.factor(dat.tr$Target))
 
 #ACCURACY OF TESTING DATA = .6397
-predictedML <- predict(mod.full,dat.te,na.action =na.pass, type="class")
-predicted_classML <- predict(mod.full,dat.te)
-caret::confusionMatrix(as.factor(predicted_classML),as.factor(dat.te$Target))
+predicted_classFS_TE <- predict(mod.forward,dat.te)
+caret::confusionMatrix(as.factor(predicted_classFS_TE),as.factor(dat.te$Target))
 
-#SENSITIVITIES, SPECIFICITIES, AND AUC of initial full model
-library(multiROC)
-dat_roc <- data.frame(T1_true = numeric(2114),T2_true= numeric(2114),T3_true= numeric(2114),T4_true= numeric(2114),T1_pred_FM= numeric(2114),T2_pred_FM= numeric(2114),T3_pred_FM= numeric(2114),T4_pred_FM= numeric(2114))
-#creates data frame in form needed for multi_roc function
-dat_roc$T1_true <- ifelse(dat.tr$Target == 1, 1, 0)
-dat_roc$T2_true <- ifelse(dat.tr$Target == 2, 1, 0)
-dat_roc$T3_true <- ifelse(dat.tr$Target == 3, 1, 0)
-dat_roc$T4_true <- ifelse(dat.tr$Target == 4, 1, 0)
-dat_roc$T1_pred_FM <- ifelse(preds.tr == 1, 1, 0)
-dat_roc$T2_pred_FM <- ifelse(preds.tr == 2, 1, 0)
-dat_roc$T3_pred_FM <- ifelse(preds.tr == 3, 1, 0)
-dat_roc$T4_pred_FM <- ifelse(preds.tr == 4, 1, 0)
+```
+```{r}
+#ORDINAL MODELS - 
 
-rocfit.full <- multi_roc(dat_roc)
-
-#ORDINAL MODEL 
 library(MASS)
 library(ordinal)
 library(erer)
-dat.tr$Target <- ordered(dat.tr$Target, levels = c(1,2,3,4))
-dat.te$Target <- ordered(dat.te$Target, levels = c(1,2,3,4))
-ord<-clm(formula= (Target~ .), data= dat.tr)
+dat.tr$Target_ord <- ordered(dat.tr$Target, levels = c(1,2,3,4))
+dat.te$Target_ord <- ordered(dat.te$Target, levels = c(1,2,3,4))
+ord<-clm(formula= (Target_ord ~ .), data= dat.tr)
 summary(ord)
 
 #ACCURACY of ordinal model #1 (training) =.6944
@@ -218,27 +355,26 @@ predicted_class<- predict (ord, dat.tr, type = "class")
 predicted_class<- ordered(predicted_class$fit, levels = c(1,2,3,4))
 cm_ols <- table(predicted_class, dat.tr$Target)
 print(cm_ols)
-Accuracytr1 <- sum(diag(cm_ols))/sum(cm_ols)
-Accuracytr1
+Accuracytr <- sum(diag(cm_ols))/sum(cm_ols)
+Accuracytr
 
 #ACCURACY of ordinal model #1 (testing) = .6496
 predicted_class<- predict (ord, dat.te, type = "class")
 predicted_class<- ordered(predicted_class$fit, levels = c(1,2,3,4))
 cm_ols <- table(predicted_class, dat.te$Target)
 print(cm_ols)
-Accuracyte1 <- sum(diag(cm_ols))/sum(cm_ols)
-Accuracyte1
+Accuracyte <- sum(diag(cm_ols))/sum(cm_ols)
+Accuracyte
 
-#removed insignificant variables from ord to build ord2
-ord2 <- clm(formula = (Target~ v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + etecho1 + dis + hogar_mayor + edjefe + meaneduc + television + qmobilephone + area1 + depend), data = dat.tr)
+ord2 <- clm(formula = (Target_ord ~ v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + etecho1 + dis + hogar_mayor + edjefe + meaneduc + television + qmobilephone + area1 + depend), data = dat.tr)
 summary(ord2)
 
 #ACCURACY of ordinal model #2 (training) =.6939
 predicted_class<- predict (ord2, dat.tr, type = "class")
 predicted_class<- ordered(predicted_class$fit, levels = c(1,2,3,4))
-cm_ols <- table(predicted_class, dat.tr$Target)
-print(cm_ols)
-Accuracytr2 <- sum(diag(cm_ols))/sum(cm_ols)
+cm_ols2 <- table(predicted_class, dat.tr$Target)
+print(cm_ols2)
+Accuracytr2 <- sum(diag(cm_ols2))/sum(cm_ols2)
 Accuracytr2
 
 #ACCURACY of ordinal model #2 (testing) = .6440
@@ -246,46 +382,13 @@ predicted_class<- predict (ord2, dat.te, type = "class")
 predicted_class<- ordered(predicted_class$fit, levels = c(1,2,3,4))
 cm_ols <- table(predicted_class, dat.te$Target)
 print(cm_ols)
-Accuracyte2 <- sum(diag(cm_ols))/sum(cm_ols)
-Accuracyte2
-
-#Cumulative Logit Model (reflects ordering)
-library(VGAM)
-fit.adj <- vglm(Target ~ .,family=acat(reverse=TRUE, parallel=TRUE), data=dat.tr)
-coef(fit.adj)
-predict.te <- predict(fit.adj,dat.te, type = "response")
-
-#LASSO MODEL  - suggests to take out hogar_nin and edjefa
-library(glmnet)
-xx <- model.matrix(Target~., dat.tr)
-yy <- as.integer(dat.tr$Target) #packages requires this to be numeric
-lasso.out <- cv.glmnet(xx, yy, alpha=1, type.measure="class")
-coef(lasso.out, s=lasso.out$lambda.min)
-
-#Ridge MODEL  - doesn't suggest to take any variables out?
-library(glmnet)
-xx <- model.matrix(Target~., dat.tr)
-yy <- as.integer(dat.tr$Target) #packages requires this to be numeric
-ridge.out <- cv.glmnet(xx, yy, alpha=0, type.measure="class")
-coef(ridge.out, s=ridge.out$lambda.min)
-
-#Backward Selection - significant variables in equation below
-#multinom(formula = Target ~ v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + etecho1 + eviv1 + dis + hogar_mayor + edjefe + meaneduc + television + qmobilephone + area1 + depend, data = dat.tr)
-mod.back <- step(mod.full,  direction="backward", trace=0)
-test <- predict.glm(mod.back, type="response")
-summary(mod.back)
-
-#Forward Selection - significant variables in equation below
-#multinom(formula = Target ~ rooms + v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + elimbasu1 + epared1 + etecho1 + eviv1 + dis + comMSS + hogar_nin + hogar_adul + hogar_mayor + edjefe + edjefa + meaneduc + overcrowding + computer + television + qmobilephone + area1 + depend, data = dat.tr)
-mod.back <- step(mod.full,  direction="forward", trace=0)
-test <- predict.glm(mod.back, type="response")
-summary(mod.back)
-
+Accuracyte <- sum(diag(cm_ols))/sum(cm_ols)
+Accuracyte
+```
 
 #TABLE SHOWING ACCURACIES (need to edit)
 
 
-```
 
 
 
