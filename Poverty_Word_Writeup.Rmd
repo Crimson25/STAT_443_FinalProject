@@ -159,12 +159,6 @@ hist(sqrthhsize)
 sqrthogar_total <- sqrt(project_data$hogar_total)
 hist(sqrthogar_total)
 
-#Split data into 60/40 training/testing
-set.seed(12345)
-train.index <- sample(row.names(project_data), 0.75*dim(project_data)[1])
-valid.index <- setdiff(row.names(project_data), train.index) 
-train.df <- project_data[train.index,]
-valid.df <- project_data[valid.index,]
 
 ```
 
