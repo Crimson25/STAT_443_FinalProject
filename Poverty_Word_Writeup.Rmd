@@ -28,71 +28,29 @@ library(e1071)
 library(dominanceanalysis) 
 library("readxl")
 
-
-project_data = read_excel("HeadOfHouseHoldFile.xlsx")
+project_data <-  read_excel("HeadOfHouseHoldFile.xlsx")
 head(project_data)
 
 project_data2 <- read_excel("HeadOfHouseHoldFileUpdate.xlsx")
 head(project_data2)
 
+project_data_final <- read_excel("FinalChanges.xlsx")
+head(project_data_final)
+
 ##CLEAN UP DATA
-#removes reference variables
-project_data2 <- project_data2 %>% dplyr::select(-c("paredblolad","paredpreb", "energcocinar2", "energcocinar3", "Married/Free Coupled", "div,sep,wid", "single", "parentesco1"))
+#replaces one variable with the variable that was transformed
+project_data_final$tamviv <- project_data_final$tamvivsqrt
+names(project_data_final)[3] <- "tamviv_sqrt"
 
-apply(is.na(project_data2), 2, which) #detects NAs in data frame, 3 values in meaneduc (1287, 1400, 1455), 1 value in depend (1287)
-project_data2[is.na(project_data2)]=0  #replaces NAs with 0 
+#removes reference variables (and removes copy of transformed variable)
+project_data_final <- project_data_final %>% dplyr::select(-c("paredblolad","paredpreb", "energcocinar2", "energcocinar3", "Married/Free Coupled", "div,sep,wid", "single", "parentesco1","tamvivsqrt"))
 
-project_data2$edjefe <- as.integer(project_data2$edjefe) #to change these two variables from char to ints
-project_data2$edjefa <- as.integer(project_data2$edjefa)
-
-project_data <- project_data %>% mutate(hogar_nin=replace(hogar_nin, hogar_nin==0, .001)) #how we can change variables with zero for transformations
-
-quantvars <- c(1,2,3,13,14,15,16,17,18,19,22,25)  #updated: of project_data2
-categorvars <- c(4,5,6,7,8,9,10,11,12,20,21,23)   #updated: of project_data2
-
-##RELATIONSHIPS
-##CORRELATIONS (relationships beween predictors)
-#shows top correlated variables
-z <-cor(project_data2[,quantvars])
-z[lower.tri(z,diag=TRUE)]=NA 
-z2=as.data.frame(as.table(z))  
-z3=na.omit(z2) 
-z4 <- subset(z3, abs(Freq)> .5) 
-correlation_df <- z4[order(-z4$Freq), ]
-correlation_df
-
-library(PerformanceAnalytics)
-chart.Correlation(project_data2[,quantvars],histogram = FALSE) #correlations for quantitative variables
-chart.Correlation(project_data2[,categorvars],histogram = FALSE, method = "spearman") #correlations for categorical variables
-
-##RELATIONSHIPS BETWEEN PREDICTORS AND RESPONSE
-library(gridExtra)
-#Function for creating bar graphs (of all quantitative variables) by target
-graphs <- function(x){
-xvar <- unlist(project_data2[,x])
-plot <- project_data2 %>% ggplot(aes(xvar,fill=Target))+ 
-  geom_bar() + 
-  facet_grid(. ~ Target) +
-  xlab(colnames(project_data2[x]))
-return(plot)
-}
-plot_list <-lapply(quantvars,FUN=graphs)
-plot list
-
-#Function for creating FREQUENCY graphs (of all quantitative variables) by target
-freqgraphs <- function(x){
-xvar <- unlist(project_data2[,x])
-plot <- project_data2 %>% ggplot(aes(xvar, colour=Target)) + 
-  geom_freqpoly(aes(group = Target)) +
-  xlab(colnames(project_data2[x]))
-return(plot)
-}
-freqplot_list <-lapply(quantvars,FUN=freqgraphs)
-freqplot_list
+project_data_final$Target <- as.factor(project_data_final$Target) # sets Target to factor for analyses
+apply(is.na(project_data_final), 2, which) #detects NAs in data frame, 3 values in meaneduc (1287, 1400, 1455), 1 value in depend (1287)
+project_data2[is.na(project_data_final)]=0  #replaces NAs with 0, can replace with zero for these categories
 
 
-#PLOTTING QUANT VARIABLES -> TRANSFORMATIONS
-
+##EXPLORING THE DATA - QUANTITATIVE
 #Rooms Plot (normal)
 roomcounts <- table(project_data$rooms)
 barplot(roomcounts,main="Number of Rooms", xlab="Room Counts")
@@ -104,10 +62,6 @@ barplot(tabletscounts,main="Number of Tablets", xlab="Tablet Counts")
 #Number of People in Household Plot (skew right)
 peoplecounts <- table(project_data$tamviv)
 barplot(peoplecounts, main="Number of People in Household", xlab="People Counts")
-          
-#Household Size Plot (small skew right)
-hhsizecounts <- table(project_data$hhsize)
-barplot(hhsizecounts, main="Household Size", xlab="Household Size Counts")
 
 #Children 0-19 Plot (skew right)
 childrencounts <- table(project_data$hogar_nin)
@@ -120,10 +74,6 @@ barplot(adultcounts, main="Number of Adults", xlab="Adult Counts")
 #People 65+ Plot (heavy skew right)
 people65counts <- table(project_data$hogar_mayor)
 barplot(people65counts, main="People 65+", xlab = "People Counts")
-
-#Total People in Household Plot (small skew right)
-totalpeoplecounts <- table(project_data$hogar_total)
-barplot(totalpeoplecounts, main="Total People in Household", xlab="People Counts")
 
 #EdJefe Plot (weird)
 edjefecounts <- table(project_data$edjefe)
@@ -145,20 +95,60 @@ barplot(overcrowdcounts, main="Overcrowding", xlab="Counts")
 dependcounts <- table(project_data$depend)
 barplot(dependcounts, main="Dependencies", xlab="Counts")
 
-#TRANSFORMATIONS: All variables without code are either factors or couldn't be done using log, sqrt, or cube root. Rooms and Number of Adults are normal.
 
-#Number of people in Household transformation: Square root 
+##TRANSFORMATIONS
+#Number of people in Household transformation: Square root  (only transformation that showed significant change)
 sqrttamviv <- (sqrt(project_data$tamviv))
 hist(sqrttamviv)
 
-#Household Size transformation: Square root 
-sqrthhsize <- sqrt(project_data$hhsize)
-hist(sqrthhsize)
 
-#Total people in Household transformation: Square root (can delete this one as we already have tamviv. Tamviv p-value = 0.02 and hogar_total = NA)
-sqrthogar_total <- sqrt(project_data$hogar_total)
-hist(sqrthogar_total)
+##EXPLORING RELATIONSHIPS
 
+#Relationships between predictors
+quantvars <- c(1,2,3,13,14,15,16,17,18,19,22,25)
+dichotomouscategorvars <- c(4,5,6,7,8,9,10,11,20,21,23) #12=marriage status, has 3 levels
+categorvars <- c(4,5,6,7,8,9,10,11,12,20,21,23)
+
+#shows top correlated variables
+z <-cor(project_data_final[,quantvars])
+z[lower.tri(z,diag=TRUE)]=NA 
+z2=as.data.frame(as.table(z))  
+z3=na.omit(z2) 
+z4 <- subset(z3, abs(Freq)> .5) 
+correlation_df <- z4[order(-z4$Freq), ]
+correlation_df
+
+library(PerformanceAnalytics)
+chart.Correlation(project_data_final[,quantvars],histogram = TRUE) #correlations for quantitative variables
+chart.Correlation(project_data_final[,dichotomouscategorvars],histogram = TRUE) #correlations for dichotomous categorical variables
+chart.Correlation(project_data_final[,categorvars],histogram = TRUE, method = "spearman") #correlations for categorical variables
+catvartest<- chisq.test()   #pairwise, double "for" loop
+
+#Relationships between predictors and response variables
+library(gridExtra)
+##Function for creating bar graphs (of all quantitative variables) by target
+graphs <- function(x){
+xvar <- unlist(project_data_final[,x])
+plot <- project_data_final %>% ggplot(aes(xvar,fill=Target))+ 
+  geom_bar() + 
+  facet_grid(. ~ Target) +
+  xlab(colnames(project_data_final[x]))
+return(plot)
+}
+plot_list <-lapply(quantvars,FUN=graphs)
+plot_list
+
+
+##Function for creating FREQUENCY graphs (of all quantitative variables) by target
+freqgraphs <- function(x){
+xvar <- unlist(project_data_final[,x])
+plot <- project_data_final %>% ggplot(aes(xvar, colour=Target)) + 
+  geom_freqpoly(aes(group = Target)) +
+  xlab(colnames(project_data_final[x]))
+return(plot)
+}
+freqplot_list <-lapply(quantvars,FUN=freqgraphs)
+freqplot_list
 
 ```
 
