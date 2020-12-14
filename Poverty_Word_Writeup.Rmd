@@ -287,6 +287,12 @@ mod.back <- step(mod.full,  direction="forward", trace=0)
 test <- predict.glm(mod.back, type="response")
 summary(mod.back)
 
+
+#TABLE SHOWING ACCURACIES (need to edit)
+Method <- c("Full Model", "Stepwise Selection", "Forward Selection", "Backward Selection", "Lasso Regression", "Ridge Regression", "Manual Selection")
+
+Accuracy <- c(full.Accuracy, step.Accuracy, stepforward.Accuracy, stepback.Accuracy, AccuracyLasso, AccuracyRidge, conf.mat.k$overall["Accuracy"])
+
 ```
 
 
