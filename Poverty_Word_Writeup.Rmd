@@ -47,7 +47,7 @@ project_data_final <- project_data_final %>% dplyr::select(-c("paredblolad","par
 
 project_data_final$Target <- as.factor(project_data_final$Target) # sets Target to factor for analyses
 apply(is.na(project_data_final), 2, which) #detects NAs in data frame, 3 values in meaneduc (1287, 1400, 1455), 1 value in depend (1287)
-project_data2[is.na(project_data_final)]=0  #replaces NAs with 0, can replace with zero for these categories
+project_data_final[is.na(project_data_final)]=0  #replaces NAs with 0, can replace with zero for these categories
 
 
 ##EXPLORING THE DATA - QUANTITATIVE
@@ -159,8 +159,8 @@ freqplot_list
 #split data into raining and testing set
 set.seed(46217921)
 train.pov <- sample(1:nrow(project_data_final), floor(.75*nrow(project_data_final)), replace=F)
-dat.tr <- project_data2[train.pov,]
-dat.te <- project_data2[-train.pov,]
+dat.tr <- project_data_final[train.pov,]
+dat.te <- project_data_final[-train.pov,]
 head(dat.tr)
 table(dat.tr$Target) #.66556 proportions are target 4
 table(dat.te$Target) #.626995 proportions are target 4
