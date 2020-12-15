@@ -179,17 +179,17 @@ car::vif(mod.full)
 
 #Finds pseudo R^2 value of model
 library(DescTools)
-PseudoR2(mod.full,"McFadden") # R^2 = .22619
+PseudoR2(mod.full,"McFadden") # R^2 = .227
 
 #ACCURACY OF TRAINING DATA - Full Multinomial Model = .702
 predicted_classFM_TR <- predict(mod.full,dat.tr)
 caret::confusionMatrix(as.factor(predicted_classFM_TR),as.factor(dat.tr$Target))
 
-#ACCURACY OF TESTING DATA - Full Multinomial Model= .6397
+#ACCURACY OF TESTING DATA - Full Multinomial Model= .634
 predicted_classFM_TE <- predict(mod.full,dat.te)
 caret::confusionMatrix(as.factor(predicted_classFM_TE),as.factor(dat.te$Target))
 
-#SENSITIVITIES, SPECIFICITIES, AND AUC - FUll Multinomial Model
+#SENSITIVITIES, SPECIFICITIES, AND AUC TRAINING DATA - FUll Multinomial Model
 dat_roc_FM_TR<- data.frame(T1_true = numeric(2114),T2_true= numeric(2114),T3_true= numeric(2114),T4_true= numeric(2114),T1_pred_FM= numeric(2114),T2_pred_FM= numeric(2114),T3_pred_FM= numeric(2114),T4_pred_FM= numeric(2114))
 #creates data frame in form needed for multi_roc function
 dat_roc_FM_TR$T1_true <- ifelse(dat.tr$Target == 1, 1, 0)
@@ -201,8 +201,28 @@ dat_roc_FM_TR$T2_pred_FM <- ifelse(predicted_classFM_TR == 2, 1, 0)
 dat_roc_FM_TR$T3_pred_FM <- ifelse(predicted_classFM_TR == 3, 1, 0)
 dat_roc_FM_TR$T4_pred_FM <- ifelse(predicted_classFM_TR == 4, 1, 0)
 
+#micro value training data = .7713
 rocfit.full_FM_TR <- multi_roc(dat_roc_FM_TR)
 rocfit.full_FM_TR$AUC
+
+
+#SENSITIVITIES, SPECIFICITIES, AND AUC TESTING DATA - FUll Multinomial Model
+dat_roc_FM_TE<- data.frame(T1_true = numeric(705),T2_true= numeric(705),T3_true= numeric(705),T4_true= numeric(705),T1_pred_FM= numeric(705),T2_pred_FM= numeric(705),T3_pred_FM= numeric(705),T4_pred_FM= numeric(705))
+#creates data frame in form needed for multi_roc function
+dat_roc_FM_TE$T1_true <- ifelse(dat.te$Target == 1, 1, 0)
+dat_roc_FM_TE$T2_true <- ifelse(dat.te$Target == 2, 1, 0)
+dat_roc_FM_TE$T3_true <- ifelse(dat.te$Target == 3, 1, 0)
+dat_roc_FM_TE$T4_true <- ifelse(dat.te$Target == 4, 1, 0)
+dat_roc_FM_TE$T1_pred_FM <- ifelse(predicted_classFM_TE == 1, 1, 0)
+dat_roc_FM_TE$T2_pred_FM <- ifelse(predicted_classFM_TE == 2, 1, 0)
+dat_roc_FM_TE$T3_pred_FM <- ifelse(predicted_classFM_TE == 3, 1, 0)
+dat_roc_FM_TE$T4_pred_FM <- ifelse(predicted_classFM_TE == 4, 1, 0)
+
+#micro value testing data= .7280
+rocfit.full_FM_TE <- multi_roc(dat_roc_FM_TE)
+rocfit.full_FM_TE$AUC
+
+
 
 
 ##Multinomial Model #2
@@ -219,20 +239,37 @@ caret::confusionMatrix(as.factor(predicted_classFM2_TR),as.factor(dat.tr$Target)
 predicted_classFM2_TE <- predict(mod.vif_under_10,dat.te)
 caret::confusionMatrix(as.factor(predicted_classFM2_TE),as.factor(dat.te$Target))
 
-#SENSITIVITIES, SPECIFICITIES, AND AUC - Multinomial Model #2
+#SENSITIVITIES, SPECIFICITIES, AND AUC TRAINING DATA- Multinomial Model #2
 dat_roc_FM2_TR<- data.frame(T1_true = numeric(2114),T2_true= numeric(2114),T3_true= numeric(2114),T4_true= numeric(2114),T1_pred_FM2= numeric(2114),T2_pred_FM2= numeric(2114),T3_pred_FM2= numeric(2114),T4_pred_FM2= numeric(2114))
 #creates data frame in form needed for multi_roc function
 dat_roc_FM2_TR$T1_true <- ifelse(dat.tr$Target == 1, 1, 0)
 dat_roc_FM2_TR$T2_true <- ifelse(dat.tr$Target == 2, 1, 0)
 dat_roc_FM2_TR$T3_true <- ifelse(dat.tr$Target == 3, 1, 0)
 dat_roc_FM2_TR$T4_true <- ifelse(dat.tr$Target == 4, 1, 0)
-dat_roc_FM2_TR$T1_pred_FM <- ifelse(predicted_classFM2_TR == 1, 1, 0)
-dat_roc_FM2_TR$T2_pred_FM <- ifelse(predicted_classFM2_TR == 2, 1, 0)
-dat_roc_FM2_TR$T3_pred_FM <- ifelse(predicted_classFM2_TR == 3, 1, 0)
-dat_roc_FM2_TR$T4_pred_FM <- ifelse(predicted_classFM2_TR == 4, 1, 0)
+dat_roc_FM2_TR$T1_pred_FM2 <- ifelse(predicted_classFM2_TR == 1, 1, 0)
+dat_roc_FM2_TR$T2_pred_FM2 <- ifelse(predicted_classFM2_TR == 2, 1, 0)
+dat_roc_FM2_TR$T3_pred_FM2 <- ifelse(predicted_classFM2_TR == 3, 1, 0)
+dat_roc_FM2_TR$T4_pred_FM2 <- ifelse(predicted_classFM2_TR == 4, 1, 0)
 
+#micro value training data = .7562
 rocfit.full_FM2_TR <- multi_roc(dat_roc_FM2_TR)
 rocfit.full_FM2_TR$AUC
+
+#SENSITIVITIES, SPECIFICITIES, AND AUC TESTING DATA - Multinomial Model #2
+dat_roc_FM2_TE<- data.frame(T1_true = numeric(705),T2_true= numeric(705),T3_true= numeric(705),T4_true= numeric(705),T1_pred_FM2= numeric(705),T2_pred_FM2= numeric(705),T3_pred_FM2= numeric(705),T4_pred_FM2= numeric(705))
+#creates data frame in form needed for multi_roc function
+dat_roc_FM2_TE$T1_true <- ifelse(dat.te$Target == 1, 1, 0)
+dat_roc_FM2_TE$T2_true <- ifelse(dat.te$Target == 2, 1, 0)
+dat_roc_FM2_TE$T3_true <- ifelse(dat.te$Target == 3, 1, 0)
+dat_roc_FM2_TE$T4_true <- ifelse(dat.te$Target == 4, 1, 0)
+dat_roc_FM2_TE$T1_pred_FM2 <- ifelse(predicted_classFM2_TE == 1, 1, 0)
+dat_roc_FM2_TE$T2_pred_FM2 <- ifelse(predicted_classFM2_TE == 2, 1, 0)
+dat_roc_FM2_TE$T3_pred_FM2 <- ifelse(predicted_classFM2_TE == 3, 1, 0)
+dat_roc_FM2_TE$T4_pred_FM2 <- ifelse(predicted_classFM2_TE == 4, 1, 0)
+
+#micro value testing data = .7252
+rocfit.full_FM2_TE <- multi_roc(dat_roc_FM2_TE)
+rocfit.full_FM2_TE$AUC
 ```
 
 ```{r}
@@ -259,17 +296,33 @@ yy <- as.integer(dat.tr$Target) #packages requires this to be numeric
 lasso.out <- cv.glmnet(xx, yy, alpha=1, family = "multinomial", type.multinomial = "grouped", type.measure="class")  #do we need to set this family to multinomial?
 coef(lasso.out, s=lasso.out$lambda.min)
 
-#ACCURACY OF TRAINING DATA = .7001
+#ACCURACY OF TRAINING DATA = .6977
 mod.lasso.tr <- multinom(formula = Target ~ rooms + v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + elimbasu1 + epared1 + etecho1 + eviv1 + dis + comMSS + hogar_adul + hogar_mayor + edjefe + meaneduc + overcrowding + computer + television + qmobilephone + area1 + depend, data = dat.tr)
 predicted_classLM_TR <- predict(mod.lasso.tr, type="class")
 acc_LM_TR <- caret::confusionMatrix(as.factor(predicted_classLM_TR),as.factor(dat.tr$Target))
 
-#ACCURACY OF Testing DATA = .6695
+#ACCURACY OF Testing DATA = .6723
 mod.lasso.te <- multinom(formula = Target ~ rooms + v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + elimbasu1 + epared1 + etecho1 + eviv1 + dis + comMSS + hogar_adul + hogar_mayor + edjefe + meaneduc + overcrowding + computer + television + qmobilephone + area1 + depend, data = dat.te)
 predicted_classLM_TE <- predict(mod.lasso.te, type="class")
 acc_LM_TE <- caret::confusionMatrix(as.factor(predicted_classLM_TE),as.factor(dat.te$Target))
 
-#SENSITIVITIES, SPECIFICITIES, AND AUC of LASSO
+#SENSITIVITIES, SPECIFICITIES, AND AUC TRAINING DATA - LASSO MODEL
+dat_roc_tr_LM <- data.frame(T1_true = numeric(2114),T2_true= numeric(2114),T3_true= numeric(2114),T4_true= numeric(2114),T1_pred_LM= numeric(2114),T2_pred_LM= numeric(2114),T3_pred_LM= numeric(2114),T4_pred_LM= numeric(2114))
+#creates data frame in form needed for multi_roc function
+dat_roc_tr_LM$T1_true <- ifelse(dat.tr$Target == 1, 1, 0)
+dat_roc_tr_LM$T2_true <- ifelse(dat.tr$Target == 2, 1, 0)
+dat_roc_tr_LM$T3_true <- ifelse(dat.tr$Target == 3, 1, 0)
+dat_roc_tr_LM$T4_true <- ifelse(dat.tr$Target == 4, 1, 0)
+dat_roc_tr_LM$T1_pred_LM <- ifelse(predicted_classLM_TR == 1, 1, 0)
+dat_roc_tr_LM$T2_pred_LM <- ifelse(predicted_classLM_TR == 2, 1, 0)
+dat_roc_tr_LM$T3_pred_LM <- ifelse(predicted_classLM_TR == 3, 1, 0)
+dat_roc_tr_LM$T4_pred_LM <- ifelse(predicted_classLM_TR == 4, 1, 0)
+
+#micro value training data = .7664
+rocfit.full_tr_LM<- multi_roc(dat_roc_tr_LM)
+rocfit.full_tr_LM$AUC
+
+#SENSITIVITIES, SPECIFICITIES, AND AUC TESTING DATA - LASSO MODEL
 dat_roc_te_LM <- data.frame(T1_true = numeric(705),T2_true= numeric(705),T3_true= numeric(705),T4_true= numeric(705),T1_pred_LM= numeric(705),T2_pred_LM= numeric(705),T3_pred_LM= numeric(705),T4_pred_LM= numeric(705))
 #creates data frame in form needed for multi_roc function
 dat_roc_te_LM$T1_true <- ifelse(dat.te$Target == 1, 1, 0)
@@ -281,6 +334,7 @@ dat_roc_te_LM$T2_pred_LM <- ifelse(predicted_classLM_TE == 2, 1, 0)
 dat_roc_te_LM$T3_pred_LM <- ifelse(predicted_classLM_TE == 3, 1, 0)
 dat_roc_te_LM$T4_pred_LM <- ifelse(predicted_classLM_TE == 4, 1, 0)
 
+#micro value testing data = .7537
 rocfit.full_te_LM<- multi_roc(dat_roc_te_LM)
 rocfit.full_te_LM$AUC
 ```
@@ -294,7 +348,8 @@ coef(ridge.out, s=ridge.out$lambda.min)
 
 #same accuracies as full multinomial model?
 #Training Accuracy = .702
-#Testing Accuracy = .6397
+#Testing Accuracy = .634
+#same micro values of full multinomial model? = training=  .7713    testing = .7280
 
 ```
 
@@ -304,13 +359,45 @@ coef(ridge.out, s=ridge.out$lambda.min)
 mod.back <- step(mod.full,  direction="backward", trace=0)
 summary(mod.back)
 
-#ACCURACY OF TRAINING DATA = .6991
+#ACCURACY OF TRAINING DATA = .7006
 predicted_classBS_TR <- predict(mod.back,dat.tr)
 caret::confusionMatrix(as.factor(predicted_classBS_TR),as.factor(dat.tr$Target))
 
-#ACCURACY OF TESTING DATA = .6383
+#ACCURACY OF TESTING DATA = .6426
 predicted_classBS_TE <- predict(mod.back,dat.te)
 caret::confusionMatrix(as.factor(predicted_classBS_TE),as.factor(dat.te$Target))
+
+#SENSITIVITIES, SPECIFICITIES, AND AUC TRAINING DATA - Backwards Selection Model
+dat_roc_BS_TR<- data.frame(T1_true = numeric(2114),T2_true= numeric(2114),T3_true= numeric(2114),T4_true= numeric(2114),T1_pred_BS= numeric(2114),T2_pred_BS= numeric(2114),T3_pred_BS= numeric(2114),T4_pred_BS= numeric(2114))
+#creates data frame in form needed for multi_roc function
+dat_roc_BS_TR$T1_true <- ifelse(dat.tr$Target == 1, 1, 0)
+dat_roc_BS_TR$T2_true <- ifelse(dat.tr$Target == 2, 1, 0)
+dat_roc_BS_TR$T3_true <- ifelse(dat.tr$Target == 3, 1, 0)
+dat_roc_BS_TR$T4_true <- ifelse(dat.tr$Target == 4, 1, 0)
+dat_roc_BS_TR$T1_pred_BS <- ifelse(predicted_classBS_TR == 1, 1, 0)
+dat_roc_BS_TR$T2_pred_BS <- ifelse(predicted_classBS_TR == 2, 1, 0)
+dat_roc_BS_TR$T3_pred_BS <- ifelse(predicted_classBS_TR == 3, 1, 0)
+dat_roc_BS_TR$T4_pred_BS <- ifelse(predicted_classBS_TR == 4, 1, 0)
+
+#micro value training data = .7700
+rocfit.full_BS_TR <- multi_roc(dat_roc_BS_TR)
+rocfit.full_BS_TR$AUC
+
+#SENSITIVITIES, SPECIFICITIES, AND AUC TESTING DATA - Backwards Selection Model
+dat_roc_BS_TE<- data.frame(T1_true = numeric(705),T2_true= numeric(705),T3_true= numeric(705),T4_true= numeric(705),T1_pred_BS= numeric(705),T2_pred_BS= numeric(705),T3_pred_BS= numeric(705),T4_pred_BS= numeric(705))
+#creates data frame in form needed for multi_roc function
+dat_roc_BS_TE$T1_true <- ifelse(dat.te$Target == 1, 1, 0)
+dat_roc_BS_TE$T2_true <- ifelse(dat.te$Target == 2, 1, 0)
+dat_roc_BS_TE$T3_true <- ifelse(dat.te$Target == 3, 1, 0)
+dat_roc_BS_TE$T4_true <- ifelse(dat.te$Target == 4, 1, 0)
+dat_roc_BS_TE$T1_pred_BS <- ifelse(predicted_classBS_TE == 1, 1, 0)
+dat_roc_BS_TE$T2_pred_BS <- ifelse(predicted_classBS_TE == 2, 1, 0)
+dat_roc_BS_TE$T3_pred_BS <- ifelse(predicted_classBS_TE == 3, 1, 0)
+dat_roc_BS_TE$T4_pred_BS <- ifelse(predicted_classBS_TE == 4, 1, 0)
+
+#micro value testing data = .7327
+rocfit.full_BS_TE <- multi_roc(dat_roc_BS_TE)
+rocfit.full_BS_TE$AUC
 ```
 
 ```{r}
@@ -324,9 +411,11 @@ summary(mod.forward)
 predicted_classFS_TR <- predict(mod.forward,dat.tr)
 caret::confusionMatrix(as.factor(predicted_classFS_TR),as.factor(dat.tr$Target))
 
-#ACCURACY OF TESTING DATA = .6397
+#ACCURACY OF TESTING DATA = .634
 predicted_classFS_TE <- predict(mod.forward,dat.te)
 caret::confusionMatrix(as.factor(predicted_classFS_TE),as.factor(dat.te$Target))
+
+#same micro values of full multinomial model? = training=  .7713    testing = .7280
 
 ```
 ```{r}
