@@ -617,10 +617,17 @@ rocfit.full_te_SVM$AUC
 ```
 
 #TABLE SHOWING ACCURACIES (need to edit)
+```{r}
 tab <- as.table(matrix(c(0.672, 0.666, 0.657, 0.649, 0.644, 0.643, 0.634, 0.6434, 0.6434, 0.6241), nrow=10, byrow=TRUE,
             disnames=list(Model=c("Lasso", "Best Subsets", "Best BIC", "Ordinal #1", "Ordinal #2", "Backward Selection", "Full", "Ridge", "Forward Selection", "VIF Based"), Accuracy)))
 tab
 
 
+tab <- matrix(c(0.672, 0.666, 0.657, 0.649, 0.644, 0.643, 0.634, 0.6434, 0.6434, 0.6241, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), nrow=10, byrow=FALSE)
+rownames(tab) <-(Model=c("Lasso", "Best Adj R^2", "Best BIC", "Ordinal #1", "Ordinal #2", "Backward Selection", "Full", "Ridge", "Forward Selection", "VIF Based"))
+colnames(tab) <- c("Accuracy", "Micro Value")
+as.table(tab)
+
+```
 
 
