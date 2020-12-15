@@ -567,6 +567,55 @@ Accuracyte <- sum(diag(cm_ols))/sum(cm_ols)
 Accuracyte
 ```
 
+```{r}
+#SVM (Support Vector Machines) Model 
+library(e1071)
+
+# Accuracy of training data = .9972
+modelsvm_tr <- svm(Target ~ ., data=dat.tr, gamma = .7, cost = 10)
+summary(modelsvm_tr)
+predicted_classSVM_TR <- predict(modelsvm_tr, type="class")
+caret::confusionMatrix(as.factor(predicted_classSVM_TR),as.factor(dat.tr$Target))
+
+# Accuracy of testing data = .9972
+modelsvm_te <- svm(Target ~ ., data=dat.te, gamma = .7, cost = 10)
+summary(modelsvm_te)
+predicted_classSVM_TE <- predict(modelsvm_te, type="class")
+caret::confusionMatrix(as.factor(predicted_classSVM_TE),as.factor(dat.te$Target))
+
+#SENSITIVITIES, SPECIFICITIES, AND AUC TRAINING DATA - BEST ADJ R^2 MODEL
+dat_roc_tr_SVM <- data.frame(T1_true = numeric(2114),T2_true= numeric(2114),T3_true= numeric(2114),T4_true= numeric(2114),T1_pred_SVM = numeric(2114),T2_pred_SVM = numeric(2114),T3_pred_SVM = numeric(2114),T4_pred_SVM = numeric(2114))
+#creates data frame in form needed for multi_roc function
+dat_roc_tr_SVM$T1_true <- ifelse(dat.tr$Target == 1, 1, 0)
+dat_roc_tr_SVM$T2_true <- ifelse(dat.tr$Target == 2, 1, 0)
+dat_roc_tr_SVM$T3_true <- ifelse(dat.tr$Target == 3, 1, 0)
+dat_roc_tr_SVM$T4_true <- ifelse(dat.tr$Target == 4, 1, 0)
+dat_roc_tr_SVM$T1_pred_SVM <- ifelse(predicted_classSVM_TR == 1, 1, 0)
+dat_roc_tr_SVM$T2_pred_SVM <- ifelse(predicted_classSVM_TR == 2, 1, 0)
+dat_roc_tr_SVM$T3_pred_SVM <- ifelse(predicted_classSVM_TR == 3, 1, 0)
+dat_roc_tr_SVM$T4_pred_SVM <- ifelse(predicted_classSVM_TR == 4, 1, 0)
+
+#micro value training data = .9974
+rocfit.full_tr_SVM<- multi_roc(dat_roc_tr_SVM)
+rocfit.full_tr_SVM$AUC
+
+#SENSITIVITIES, SPECIFICITIES, AND AUC TESTING DATA - BESt ADJ R^2 MODEL
+dat_roc_te_SVM <- data.frame(T1_true = numeric(705),T2_true= numeric(705),T3_true= numeric(705),T4_true= numeric(705),T1_pred_SVM= numeric(705),T2_pred_SVM= numeric(705),T3_pred_SVM= numeric(705),T4_pred_SVM= numeric(705))
+#creates data frame in form needed for multi_roc function
+dat_roc_te_SVM$T1_true <- ifelse(dat.te$Target == 1, 1, 0)
+dat_roc_te_SVM$T2_true <- ifelse(dat.te$Target == 2, 1, 0)
+dat_roc_te_SVM$T3_true <- ifelse(dat.te$Target == 3, 1, 0)
+dat_roc_te_SVM$T4_true <- ifelse(dat.te$Target == 4, 1, 0)
+dat_roc_te_SVM$T1_pred_SVM <- ifelse(predicted_classSVM_TE == 1, 1, 0)
+dat_roc_te_SVM$T2_pred_SVM <- ifelse(predicted_classSVM_TE == 2, 1, 0)
+dat_roc_te_SVM$T3_pred_SVM <- ifelse(predicted_classSVM_TE == 3, 1, 0)
+dat_roc_te_SVM$T4_pred_SVM <- ifelse(predicted_classSVM_TE == 4, 1, 0)
+
+#micro value testing data = .9980
+rocfit.full_te_SVM<- multi_roc(dat_roc_te_SVM)
+rocfit.full_te_SVM$AUC
+```
+
 #TABLE SHOWING ACCURACIES (need to edit)
 
 
