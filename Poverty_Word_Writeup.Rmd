@@ -455,7 +455,7 @@ dat_roc_tr_AR2$T4_pred_AR2 <- ifelse(predicted_classAR2_TR == 4, 1, 0)
 rocfit.full_tr_AR2<- multi_roc(dat_roc_tr_AR2)
 rocfit.full_tr_AR2$AUC
 
-#SENSITIVITIES, SPECIFICITIES, AND AUC TESTING DATA - BEST ADJ R^2 MODEL
+#SENSITIVITIES, SPECIFICITIES, AND AUC TESTING DATA - BESt ADJ R^2 MODEL
 dat_roc_te_AR2 <- data.frame(T1_true = numeric(705),T2_true= numeric(705),T3_true= numeric(705),T4_true= numeric(705),T1_pred_AR2= numeric(705),T2_pred_AR2= numeric(705),T3_pred_AR2= numeric(705),T4_pred_AR2= numeric(705))
 #creates data frame in form needed for multi_roc function
 dat_roc_te_AR2$T1_true <- ifelse(dat.te$Target == 1, 1, 0)
@@ -486,7 +486,7 @@ mod.bic.te <- multinom(formula = Target ~ tamviv_sqrt + cielorazo + GasOrElectri
 predicted_classBIC_TE <- predict(mod.bic.te, type="class")
 caret::confusionMatrix(as.factor(predicted_classBIC_TE),as.factor(dat.te$Target))
 
-#SENSITIVITIES, SPECIFICITIES, AND AUC TRAINING DATA - BEST BIC MODEL
+#SENSITIVITIES, SPECIFICITIES, AND AUC TRAINING DATA - BEST ADJ R^2 MODEL
 dat_roc_tr_BIC <- data.frame(T1_true = numeric(2114),T2_true= numeric(2114),T3_true= numeric(2114),T4_true= numeric(2114),T1_pred_BIC= numeric(2114),T2_pred_BIC= numeric(2114),T3_pred_BIC= numeric(2114),T4_pred_BIC= numeric(2114))
 #creates data frame in form needed for multi_roc function
 dat_roc_tr_BIC$T1_true <- ifelse(dat.tr$Target == 1, 1, 0)
@@ -502,7 +502,7 @@ dat_roc_tr_BIC$T4_pred_BIC <- ifelse(predicted_classBIC_TR == 4, 1, 0)
 rocfit.full_tr_BIC<- multi_roc(dat_roc_tr_BIC)
 rocfit.full_tr_BIC$AUC
 
-#SENSITIVITIES, SPECIFICITIES, AND AUC TESTING DATA - BEST BIC MODEL
+#SENSITIVITIES, SPECIFICITIES, AND AUC TESTING DATA - BESt ADJ R^2 MODEL
 dat_roc_te_BIC <- data.frame(T1_true = numeric(705),T2_true= numeric(705),T3_true= numeric(705),T4_true= numeric(705),T1_pred_BIC= numeric(705),T2_pred_BIC= numeric(705),T3_pred_BIC= numeric(705),T4_pred_BIC= numeric(705))
 #creates data frame in form needed for multi_roc function
 dat_roc_te_BIC$T1_true <- ifelse(dat.te$Target == 1, 1, 0)
@@ -583,7 +583,7 @@ summary(modelsvm_te)
 predicted_classSVM_TE <- predict(modelsvm_te, type="class")
 caret::confusionMatrix(as.factor(predicted_classSVM_TE),as.factor(dat.te$Target))
 
-#SENSITIVITIES, SPECIFICITIES, AND AUC TRAINING DATA - SVM MODEL
+#SENSITIVITIES, SPECIFICITIES, AND AUC TRAINING DATA - BEST ADJ R^2 MODEL
 dat_roc_tr_SVM <- data.frame(T1_true = numeric(2114),T2_true= numeric(2114),T3_true= numeric(2114),T4_true= numeric(2114),T1_pred_SVM = numeric(2114),T2_pred_SVM = numeric(2114),T3_pred_SVM = numeric(2114),T4_pred_SVM = numeric(2114))
 #creates data frame in form needed for multi_roc function
 dat_roc_tr_SVM$T1_true <- ifelse(dat.tr$Target == 1, 1, 0)
@@ -599,7 +599,7 @@ dat_roc_tr_SVM$T4_pred_SVM <- ifelse(predicted_classSVM_TR == 4, 1, 0)
 rocfit.full_tr_SVM<- multi_roc(dat_roc_tr_SVM)
 rocfit.full_tr_SVM$AUC
 
-#SENSITIVITIES, SPECIFICITIES, AND AUC TESTING DATA - SVM MODEL
+#SENSITIVITIES, SPECIFICITIES, AND AUC TESTING DATA - BESt ADJ R^2 MODEL
 dat_roc_te_SVM <- data.frame(T1_true = numeric(705),T2_true= numeric(705),T3_true= numeric(705),T4_true= numeric(705),T1_pred_SVM= numeric(705),T2_pred_SVM= numeric(705),T3_pred_SVM= numeric(705),T4_pred_SVM= numeric(705))
 #creates data frame in form needed for multi_roc function
 dat_roc_te_SVM$T1_true <- ifelse(dat.te$Target == 1, 1, 0)
@@ -617,7 +617,9 @@ rocfit.full_te_SVM$AUC
 ```
 
 #TABLE SHOWING ACCURACIES (need to edit)
-
+tab <- as.table(matrix(c(0.672, 0.666, 0.657, 0.649, 0.644, 0.643, 0.634, 0.6434, 0.6434, 0.6241), nrow=10, byrow=TRUE,
+            disnames=list(Model=c("Lasso", "Best Subsets", "Best BIC", "Ordinal #1", "Ordinal #2", "Backward Selection", "Full", "Ridge", "Forward Selection", "VIF Based"), Accuracy)))
+tab
 
 
 
