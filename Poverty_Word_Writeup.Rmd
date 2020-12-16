@@ -341,20 +341,23 @@ rocfit.full_VGLM_TE$AUC
 ```
 
 ```{r}
-#LASSO MODEL  - suggests to take out hogar_nin and edjefa
+#LASSO MODEL  - suggests to take out hogar_nin, edjefa, and rooms
 library(glmnet)
 xx <- model.matrix(Target~., dat.tr)
 yy <- as.integer(dat.tr$Target) #packages requires this to be numeric
-lasso.out <- cv.glmnet(xx, yy, alpha=1, family = "multinomial", type.multinomial = "grouped", type.measure="class")  #do we need to set this family to multinomial?
+lasso.out <- cv.glmnet(xx, yy, alpha=1, type.measure="class")  
 coef(lasso.out, s=lasso.out$lambda.min)
+lasso.out
+# family = "multinomial", type.multinomial = "grouped",
+#do we need to set this family to multinomial?
 
 #ACCURACY OF TRAINING DATA = .6977
-mod.lasso.tr <- multinom(formula = Target ~ rooms + v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + elimbasu1 + epared1 + etecho1 + eviv1 + dis + comMSS + hogar_adul + hogar_mayor + edjefe + meaneduc + overcrowding + computer + television + qmobilephone + area1 + depend, data = dat.tr)
+mod.lasso.tr <- multinom(formula = Target ~ v18q1 + tamviv_sqrt + CementorBetter + cielorazo + GasOrElectric + elimbasu1 + epared1 + etecho1 + eviv1 + dis + comMSS + hogar_adul + hogar_mayor + edjefe + meaneduc + overcrowding + computer + television + qmobilephone + area1 + depend, data = dat.tr)
 predicted_classLM_TR <- predict(mod.lasso.tr, type="class")
 acc_LM_TR <- caret::confusionMatrix(as.factor(predicted_classLM_TR),as.factor(dat.tr$Target))
 
-#ACCURACY OF Testing DATA = .6723
-mod.lasso.te <- multinom(formula = Target ~ rooms + v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + elimbasu1 + epared1 + etecho1 + eviv1 + dis + comMSS + hogar_adul + hogar_mayor + edjefe + meaneduc + overcrowding + computer + television + qmobilephone + area1 + depend, data = dat.te)
+#ACCURACY OF Testing DATA = .678
+mod.lasso.te <- multinom(formula = Target ~ v18q1 + tamviv_sqrt + CementorBetter + cielorazo + GasOrElectric + elimbasu1 + epared1 + etecho1 + eviv1 + dis + comMSS + hogar_adul + hogar_mayor + edjefe + meaneduc + overcrowding + computer + television + qmobilephone + area1 + depend, data = dat.te)
 predicted_classLM_TE <- predict(mod.lasso.te, type="class")
 acc_LM_TE <- caret::confusionMatrix(as.factor(predicted_classLM_TE),as.factor(dat.te$Target))
 
@@ -386,7 +389,8 @@ dat_roc_te_LM$T2_pred_LM <- ifelse(predicted_classLM_TE == 2, 1, 0)
 dat_roc_te_LM$T3_pred_LM <- ifelse(predicted_classLM_TE == 3, 1, 0)
 dat_roc_te_LM$T4_pred_LM <- ifelse(predicted_classLM_TE == 4, 1, 0)
 
-#micro value testing data = .7537
+#micro value testing data = .7586
+library(multiROC)
 rocfit.full_te_LM<- multi_roc(dat_roc_te_LM)
 rocfit.full_te_LM$AUC
 ```
