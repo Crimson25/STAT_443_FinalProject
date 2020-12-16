@@ -525,50 +525,118 @@ rocfit.full_te_BIC$AUC
 ```
 
 ```{r}
-#ORDINAL MODELS - 
+#ORDINAL MODELS
 
 library(MASS)
 library(ordinal)
 library(erer)
-dat.tr$Target_ord <- ordered(dat.tr$Target, levels = c(1,2,3,4))
-dat.te$Target_ord <- ordered(dat.te$Target, levels = c(1,2,3,4))
-ord<-clm(formula= (Target_ord ~ .), data= dat.tr)
+
+##ORDINAL MODEL #1
+ord1<-clm(formula=(Target ~.), data= dat.tr)
 summary(ord)
 
-#ACCURACY of ordinal model #1 (training) =.6944
-predicted_class<- predict (ord, dat.tr, type = "class")
-predicted_class<- ordered(predicted_class$fit, levels = c(1,2,3,4))
-cm_ols <- table(predicted_class, dat.tr$Target)
+#ACCURACY of ordinal model #1 (training) =.6935
+predicted_class1<- predict(ord1, dat.tr, type = "class")
+predicted_classOR1_TR<- ordered(predicted_class1$fit, levels = c(1,2,3,4))
+cm_ols <- table(predicted_classOR1_TR, dat.tr$Target)
 print(cm_ols)
 Accuracytr <- sum(diag(cm_ols))/sum(cm_ols)
 Accuracytr
 
-#ACCURACY of ordinal model #1 (testing) = .6496
-predicted_class<- predict (ord, dat.te, type = "class")
-predicted_class<- ordered(predicted_class$fit, levels = c(1,2,3,4))
-cm_ols <- table(predicted_class, dat.te$Target)
-print(cm_ols)
-Accuracyte <- sum(diag(cm_ols))/sum(cm_ols)
+#ACCURACY of ordinal model #1 (testing) = .6468
+predicted_class2<- predict(ord1, dat.te, type = "class")
+predicted_classOR1_TE<- ordered(predicted_class2$fit, levels = c(1,2,3,4))
+cm_ols2 <- table(predicted_classOR1_TE, dat.te$Target)
+print(cm_ols2)
+Accuracyte <- sum(diag(cm_ols2))/sum(cm_ols2)
 Accuracyte
 
-ord2 <- clm(formula = (Target_ord ~ v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + etecho1 + dis + hogar_mayor + edjefe + meaneduc + television + qmobilephone + area1 + depend), data = dat.tr)
+
+#SENSITIVITIES, SPECIFICITIES, AND AUC TRAINING DATA - Ordinal Model #1
+dat_roc_OR1_TR<- data.frame(T1_true = numeric(2114),T2_true= numeric(2114),T3_true= numeric(2114),T4_true= numeric(2114),T1_pred_OR1= numeric(2114),T2_pred_OR1= numeric(2114),T3_pred_OR1= numeric(2114),T4_pred_OR1= numeric(2114))
+#creates data frame in form needed for multi_roc function
+dat_roc_OR1_TR$T1_true <- ifelse(dat.tr$Target == 1, 1, 0)
+dat_roc_OR1_TR$T2_true <- ifelse(dat.tr$Target == 2, 1, 0)
+dat_roc_OR1_TR$T3_true <- ifelse(dat.tr$Target == 3, 1, 0)
+dat_roc_OR1_TR$T4_true <- ifelse(dat.tr$Target == 4, 1, 0)
+dat_roc_OR1_TR$T1_pred_OR1 <- ifelse(predicted_classOR1_TR == 1, 1, 0)
+dat_roc_OR1_TR$T2_pred_OR1 <- ifelse(predicted_classOR1_TR == 2, 1, 0)
+dat_roc_OR1_TR$T3_pred_OR1 <- ifelse(predicted_classOR1_TR == 3, 1, 0)
+dat_roc_OR1_TR$T4_pred_OR1 <- ifelse(predicted_classOR1_TR == 4, 1, 0)
+
+#micro-average value training data = .7647
+rocfit.full_OR1_TR <- multi_roc(dat_roc_OR1_TR)
+rocfit.full_OR1_TR$AUC
+
+
+#SENSITIVITIES, SPECIFICITIES, AND AUC TESTING DATA - Ordinal Model #1
+dat_roc_OR1_TE<- data.frame(T1_true = numeric(705),T2_true= numeric(705),T3_true= numeric(705),T4_true= numeric(705),T1_pred_OR1= numeric(705),T2_pred_OR1= numeric(705),T3_pred_OR1= numeric(705),T4_pred_OR1= numeric(705))
+#creates data frame in form needed for multi_roc function
+dat_roc_OR1_TE$T1_true <- ifelse(dat.te$Target == 1, 1, 0)
+dat_roc_OR1_TE$T2_true <- ifelse(dat.te$Target == 2, 1, 0)
+dat_roc_OR1_TE$T3_true <- ifelse(dat.te$Target == 3, 1, 0)
+dat_roc_OR1_TE$T4_true <- ifelse(dat.te$Target == 4, 1, 0)
+dat_roc_OR1_TE$T1_pred_OR1 <- ifelse(predicted_classOR1_TE == 1, 1, 0)
+dat_roc_OR1_TE$T2_pred_OR1 <- ifelse(predicted_classOR1_TE == 2, 1, 0)
+dat_roc_OR1_TE$T3_pred_OR1 <- ifelse(predicted_classOR1_TE == 3, 1, 0)
+dat_roc_OR1_TE$T4_pred_OR1 <- ifelse(predicted_classOR1_TE == 4, 1, 0)
+
+
+#micro-average value testing data = .7319
+rocfit.full_OR1_TE <- multi_roc(dat_roc_OR1_TE)
+rocfit.full_OR1_TE$AUC
+ 
+
+ord2 <- clm(formula = (Target ~ v18q1 + tamviv_sqrt + CementorBetter + cielorazo + GasOrElectric + etecho1 + dis + hogar_mayor + edjefe + meaneduc + television + qmobilephone + area1 + depend), data = dat.tr)
 summary(ord2)
 
-#ACCURACY of ordinal model #2 (training) =.6939
-predicted_class<- predict (ord2, dat.tr, type = "class")
-predicted_class<- ordered(predicted_class$fit, levels = c(1,2,3,4))
-cm_ols2 <- table(predicted_class, dat.tr$Target)
-print(cm_ols2)
-Accuracytr2 <- sum(diag(cm_ols2))/sum(cm_ols2)
+#ACCURACY of ordinal model #2 (training) =.6944
+predicted_class3<- predict(ord2, dat.tr, type = "class")
+predicted_classOR2_TR<- ordered(predicted_class3$fit, levels = c(1,2,3,4))
+cm_ols3 <- table(predicted_classOR2_TR, dat.tr$Target)
+print(cm_ols3)
+Accuracytr2 <- sum(diag(cm_ols3))/sum(cm_ols3)
 Accuracytr2
 
-#ACCURACY of ordinal model #2 (testing) = .6440
-predicted_class<- predict (ord2, dat.te, type = "class")
-predicted_class<- ordered(predicted_class$fit, levels = c(1,2,3,4))
-cm_ols <- table(predicted_class, dat.te$Target)
-print(cm_ols)
-Accuracyte <- sum(diag(cm_ols))/sum(cm_ols)
+#ACCURACY of ordinal model #2 (testing) = .6426
+predicted_class4<- predict(ord2, dat.te, type = "class")
+predicted_classOR2_TE<- ordered(predicted_class4$fit, levels = c(1,2,3,4))
+cm_ols4 <- table(predicted_classOR2_TE, dat.te$Target)
+print(cm_ols4)
+Accuracyte <- sum(diag(cm_ols4))/sum(cm_ols4)
 Accuracyte
+
+#SENSITIVITIES, SPECIFICITIES, AND AUC TRAINING DATA - Ordinal Model #2
+dat_roc_OR2_TR<- data.frame(T1_true = numeric(2114),T2_true= numeric(2114),T3_true= numeric(2114),T4_true= numeric(2114),T1_pred_OR2= numeric(2114),T2_pred_OR2= numeric(2114),T3_pred_OR2= numeric(2114),T4_pred_OR2= numeric(2114))
+#creates data frame in form needed for multi_roc function
+dat_roc_OR2_TR$T1_true <- ifelse(dat.tr$Target == 1, 1, 0)
+dat_roc_OR2_TR$T2_true <- ifelse(dat.tr$Target == 2, 1, 0)
+dat_roc_OR2_TR$T3_true <- ifelse(dat.tr$Target == 3, 1, 0)
+dat_roc_OR2_TR$T4_true <- ifelse(dat.tr$Target == 4, 1, 0)
+dat_roc_OR2_TR$T1_pred_OR2 <- ifelse(predicted_classOR2_TR == 1, 1, 0)
+dat_roc_OR2_TR$T2_pred_OR2 <- ifelse(predicted_classOR2_TR == 2, 1, 0)
+dat_roc_OR2_TR$T3_pred_OR2 <- ifelse(predicted_classOR2_TR == 3, 1, 0)
+dat_roc_OR2_TR$T4_pred_OR2 <- ifelse(predicted_classOR2_TR == 4, 1, 0)
+
+#micro-average value training data = .7652
+rocfit.full_OR2_TR <- multi_roc(dat_roc_OR2_TR)
+rocfit.full_OR2_TR$AUC
+
+#SENSITIVITIES, SPECIFICITIES, AND AUC TESTING DATA - Ordinal Model #2
+dat_roc_OR2_TE<- data.frame(T1_true = numeric(705),T2_true= numeric(705),T3_true= numeric(705),T4_true= numeric(705),T1_pred_OR2= numeric(705),T2_pred_OR2= numeric(705),T3_pred_OR2= numeric(705),T4_pred_OR2= numeric(705))
+#creates data frame in form needed for multi_roc function
+dat_roc_OR2_TE$T1_true <- ifelse(dat.te$Target == 1, 1, 0)
+dat_roc_OR2_TE$T2_true <- ifelse(dat.te$Target == 2, 1, 0)
+dat_roc_OR2_TE$T3_true <- ifelse(dat.te$Target == 3, 1, 0)
+dat_roc_OR2_TE$T4_true <- ifelse(dat.te$Target == 4, 1, 0)
+dat_roc_OR2_TE$T1_pred_OR2 <- ifelse(predicted_classOR2_TE == 1, 1, 0)
+dat_roc_OR2_TE$T2_pred_OR2 <- ifelse(predicted_classOR2_TE == 2, 1, 0)
+dat_roc_OR2_TE$T3_pred_OR2 <- ifelse(predicted_classOR2_TE == 3, 1, 0)
+dat_roc_OR2_TE$T4_pred_OR2 <- ifelse(predicted_classOR2_TE == 4, 1, 0)
+
+#micro-accuracy value testing data = .7295
+rocfit.full_OR2_TE <- multi_roc(dat_roc_OR2_TE)
+rocfit.full_OR2_TE$AUC
 ```
 
 ```{r}
