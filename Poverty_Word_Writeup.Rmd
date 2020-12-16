@@ -277,19 +277,55 @@ rocfit.full_FM2_TE$AUC
 ```
 
 ```{r}
-#Cumulative Logit Model - Reflects ordering - NOT WORKING
+#Cumulative Logit Model - Reflects ordering 
 library(VGAM)
-fit.adj <- vglm(Target ~ .,family=cumulative(parallel=TRUE), data=dat.tr)
-coef(fit.adj)
-predict.te <- predict(fit.adj,dat.te, type = "response")
+dat.tr$Target <- ordered(dat.tr$Target, levels = c(1,2,3,4))
+dat.te$Target <- ordered(dat.te$Target, levels = c(1,2,3,4))
+fit.adj_tr <- vglm(Target ~ .,family=cumulative(parallel=TRUE), data=dat.tr)
+fit.adj_te <- vglm(Target ~ .,family=cumulative(parallel=TRUE), data=dat.te)
+predict.tr <- predict(fit.adj_tr,dat.tr, type = "response")
+predict.te <- predict(fit.adj_te,dat.te, type = "response")
 
-#ACCURACY OF TRAINING DATA =
-predicted_classVGLM <- predict(fit.adj,dat.tr)
-caret::confusionMatrix(as.factor(predicted_classVGLM),as.factor(dat.tr$Target))
+#ACCURACY OF TRAINING DATA = .6935
+predicted_classVGLM_TR <- apply(predict.tr, 1, which.max)
+caret::confusionMatrix(as.factor(predicted_classVGLM_TR),as.factor(dat.tr$Target))
 
-#ACCURACY OF TESTING DATA =
-predicted_classVGLM <- predict(mod.full,dat.te)
-caret::confusionMatrix(as.factor(predicted_classML),as.factor(dat.te$Target))
+#ACCURACY OF TESTING DATA = .6596
+predicted_classVGLM_TE <- apply(predict.te, 1, which.max)
+caret::confusionMatrix(as.factor(predicted_classVGLM_TE),as.factor(dat.te$Target))
+
+#SENSITIVITIES, SPECIFICITIES, AND AUC TRAINING DATA - VGLM 
+dat_roc_VGLM_TR<- data.frame(T1_true = numeric(2114),T2_true= numeric(2114),T3_true= numeric(2114),T4_true= numeric(2114),T1_pred_VGLM= numeric(2114),T2_pred_VGLM= numeric(2114),T3_pred_VGLM= numeric(2114),T4_pred_VGLM= numeric(2114))
+#creates data frame in form needed for multi_roc function
+dat_roc_VGLM_TR$T1_true <- ifelse(dat.tr$Target == 1, 1, 0)
+dat_roc_VGLM_TR$T2_true <- ifelse(dat.tr$Target == 2, 1, 0)
+dat_roc_VGLM_TR$T3_true <- ifelse(dat.tr$Target == 3, 1, 0)
+dat_roc_VGLM_TR$T4_true <- ifelse(dat.tr$Target == 4, 1, 0)
+dat_roc_VGLM_TR$T1_pred_VGLM <- ifelse(predicted_classVGLM_TR == 1, 1, 0)
+dat_roc_VGLM_TR$T2_pred_VGLM <- ifelse(predicted_classVGLM_TR == 2, 1, 0)
+dat_roc_VGLM_TR$T3_pred_VGLM <- ifelse(predicted_classVGLM_TR == 3, 1, 0)
+dat_roc_VGLM_TR$T4_pred_VGLM <- ifelse(predicted_classVGLM_TR == 4, 1, 0)
+
+#micro value training data = .7647
+rocfit.full_VGLM_TR <- multi_roc(dat_roc_VGLM_TR)
+rocfit.full_VGLM_TR$AUC
+
+#SENSITIVITIES, SPECIFICITIES, AND AUC TESTING DATA - VGLM 
+dat_roc_VGLM_TE<- data.frame(T1_true = numeric(705),T2_true= numeric(705),T3_true= numeric(705),T4_true= numeric(705),T1_pred_VGLM= numeric(705),T2_pred_VGLM= numeric(705),T3_pred_VGLM= numeric(705),T4_pred_VGLM= numeric(705))
+#creates data frame in form needed for multi_roc function
+dat_roc_VGLM_TE$T1_true <- ifelse(dat.te$Target == 1, 1, 0)
+dat_roc_VGLM_TE$T2_true <- ifelse(dat.te$Target == 2, 1, 0)
+dat_roc_VGLM_TE$T3_true <- ifelse(dat.te$Target == 3, 1, 0)
+dat_roc_VGLM_TE$T4_true <- ifelse(dat.te$Target == 4, 1, 0)
+dat_roc_VGLM_TE$T1_pred_VGLM <- ifelse(predicted_classVGLM_TE == 1, 1, 0)
+dat_roc_VGLM_TE$T2_pred_VGLM <- ifelse(predicted_classVGLM_TE == 2, 1, 0)
+dat_roc_VGLM_TE$T3_pred_VGLM <- ifelse(predicted_classVGLM_TE == 3, 1, 0)
+dat_roc_VGLM_TE$T4_pred_VGLM <- ifelse(predicted_classVGLM_TE == 4, 1, 0)
+
+#micro value testing data = .7478
+rocfit.full_VGLM_TE<- multi_roc(dat_roc_VGLM_TE)
+rocfit.full_VGLM_TE$AUC
+
 ```
 
 ```{r}
