@@ -106,7 +106,6 @@ hist(sqrttamviv)
 
 #Relationships between predictors
 quantvars <- c(1,2,3,13,14,15,16,17,18,19,22,25)
-dichotomouscategorvars <- c(4,5,6,7,8,9,10,11,20,21,23) #12=marriage status, has 3 levels
 categorvars <- c(4,5,6,7,8,9,10,11,12,20,21,23)
 
 #shows top correlated variables
@@ -120,9 +119,22 @@ correlation_df
 
 library(PerformanceAnalytics)
 chart.Correlation(project_data_final[,quantvars],histogram = TRUE) #correlations for quantitative variables
-chart.Correlation(project_data_final[,dichotomouscategorvars],histogram = TRUE) #correlations for dichotomous categorical variables
-chart.Correlation(project_data_final[,categorvars],histogram = TRUE, method = "spearman") #correlations for categorical variables
-catvartest<- chisq.test()   #pairwise, double "for" loop
+
+# double "for" loop computes chi-square tests for each set of variables
+#using Bonferroni correction for p-value of (alpha)/(number of tests)= .05/325 = .00015, no p-values were significant, signalling no problems with multicollinearity
+df.test <- data.frame(Variable1=character(),Variable2=character(),p_value=double(),stringsAsFactors=FALSE)
+
+for(i in 1:ncol(project_data_final)){
+  for(j in i:ncol(project_data_final)){
+    chi_test <- chisq.test(unlist(project_data_final[,i]),unlist(project_data_final[,j]),simulate.p.value=TRUE)
+    p <- chi_test$p.value
+    chi_row <- data.frame(Variable1 = colnames(project_data_final[i]), Variable2 = colnames(project_data_final[j]), p_value = p)
+    df.test <- rbind(df.test, chi_row)
+ }
+}
+df.test
+df_sorted <- df.test[with(df.test, order(p_value)), ]
+
 
 #Relationships between predictors and response variables
 library(gridExtra)
