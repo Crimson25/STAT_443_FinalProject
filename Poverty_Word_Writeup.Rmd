@@ -752,6 +752,7 @@ as.table(tab)
 
 ```{r fig.align='center', message=FALSE, warning=FALSE, echo=FALSE, fig.height=4}
 #LASSO testing data classification matrix
+library(flextable)
 class.tbl_LAS <- data.frame("." = c("Level 1 \nPredicted", "Level 2 \nPredicted", "Level 3 \nPredicted", "Level 4 \nPredicted"), "Level 1 \nTrue" = c(16,13,1,25), "Level 2 \nTrue" = c(6,36,2,72),"Level 3 \nTrue" = c(6,14,6,66),"Level 4 \nTrue" = c(6,12,4,420))
 
 class.ft <- flextable(class.tbl_LAS)
