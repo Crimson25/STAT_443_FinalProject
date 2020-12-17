@@ -741,7 +741,7 @@ rocfit.full_te_SVM$AUC
 ```
 ```{r}
 #TABLE SHOWING ACCURACIES (will fill in values at end)
-tab <- matrix(c(), nrow=10, byrow=FALSE)
+tab <- matrix(c(0.997, 0.998, 0.672, 0.754, 0.667, 0.748, 0.657, 0.741, 0.649, 0, 0.644, 0, 0.625, 0.733, 0.634, 0.728, 0.634, 0.728, 0.634, 0.728, 0.624, 0.725), nrow=11, byrow=FALSE)
 rownames(tab) <-(Model=c("SVM", "Lasso", "Best Adj R^2", "Best BIC", "Ordinal #1", "Ordinal #2", "Backward Selection", "Full", "Ridge", "Forward Selection", "VIF Based"))
 colnames(tab) <- c("Accuracy", "Micro Value")
 as.table(tab)
