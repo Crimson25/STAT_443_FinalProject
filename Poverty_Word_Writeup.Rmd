@@ -750,6 +750,45 @@ as.table(tab)
 
 ```
 
+```{r fig.align='center', message=FALSE, warning=FALSE, echo=FALSE, fig.height=4}
+#LASSO testing data classification matrix
+class.tbl_LAS <- data.frame("." = c("Level 1 \nPredicted", "Level 2 \nPredicted", "Level 3 \nPredicted", "Level 4 \nPredicted"), "Level 1 \nTrue" = c(16,13,1,25), "Level 2 \nTrue" = c(6,36,2,72),"Level 3 \nTrue" = c(6,14,6,66),"Level 4 \nTrue" = c(6,12,4,420))
+
+class.ft <- flextable(class.tbl_LAS)
+class.ft <- align(class.ft, align = "center", part = "all")
+class.ft <- bg(class.ft, bg = "steelblue", part = "header")
+class.ft <- bg(class.ft, j= ".", bg = "steelblue", part = "body" )
+class.ft <- color(class.ft, color = "white", part = "header")
+class.ft <- color(class.ft, j=".", color="white", part= "body")
+class.ft <- bold(class.ft, part = "header", bold = TRUE)
+class.ft <- bold(class.ft, j = ".", bold = TRUE, part = "body")
+class.ft <- set_header_labels(class.ft, . = " ", 
+    Level.1..True = "Level 1 \nTrue",
+    Level.2..True = "Level 2 \nTrue",
+    Level.3..True = "Level 3 \nTrue",
+    Level.4..True = "Level 4 \nTrue")
+autofit(class.ft)
+```
+
+```{r fig.align='center', message=FALSE, warning=FALSE, echo=FALSE, fig.height=4}
+#SVM testing data classification matrix
+class.tbl_SVM <- data.frame("." = c("Level 1 \nPredicted", "Level 2 \nPredicted", "Level 3 \nPredicted", "Level 4 \nPredicted"), "Level 1 \nTrue" = c(55,0,0,0), "Level 2 \nTrue" = c(0,115,0,1),"Level 3 \nTrue" = c(0,0,91,1),"Level 4 \nTrue" = c(0,0,0,442))
+
+class.ft <- flextable(class.tbl_SVM)
+class.ft <- align(class.ft, align = "center", part = "all")
+class.ft <- bg(class.ft, bg = "steelblue", part = "header")
+class.ft <- bg(class.ft, j= ".", bg = "steelblue", part = "body" )
+class.ft <- color(class.ft, color = "white", part = "header")
+class.ft <- color(class.ft, j=".", color="white", part= "body")
+class.ft <- bold(class.ft, part = "header", bold = TRUE)
+class.ft <- bold(class.ft, j = ".", bold = TRUE, part = "body")
+class.ft <- set_header_labels(class.ft, . = " ", 
+    Level.1..True = "Level 1 \nTrue",
+    Level.2..True = "Level 2 \nTrue",
+    Level.3..True = "Level 3 \nTrue",
+    Level.4..True = "Level 4 \nTrue")
+autofit(class.ft)
+```
 
   ##Results Summary 
 Many different models were built using various model selection techniques in this analysis. Although, the final suggested model to maximize overall accuracy is the lasso regression model with 21 variables: number of tablets the household owns, square root of the number of persons living in the household, predominant material on the outside wall, if the house has a ceiling, main source of energy used for cooking, method of garbage disposal, condition of walls, condition of roof, condition of floors, if the head of household is disabled, marriage status, number of adults (19-64) in the household, number of adults (over 65) in the household, years of education if the head of household is male, average years of education for adults over 18, number of people per room, if the household has a laptop or desktop computer, if the household has a TV, the number of mobile phones the household owns, if the house is in an urban area, and the dependency rate (number of members of the household younger than 19 or older than 64)/(number of member of household between 19 and 64). The overall accuracy of this final model is 0.678. In other words, this model correctly predicts a poverty class 67.8% of the time. This model had a micro-average value of .7586 which suggests that the weighted accuracy is improved and potentially shows this model had a better classification rate than the standard method of calculating accuracy is showing. Overall, this model seems to have okay predictive power and could be used as a tool for the government and social programs to assign poverty levels to household and give aid accordingly.
