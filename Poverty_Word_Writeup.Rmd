@@ -352,8 +352,6 @@ yy <- as.integer(dat.tr$Target) #packages requires this to be numeric
 lasso.out <- cv.glmnet(xx, yy, alpha=1, type.measure="class")  
 coef(lasso.out, s=lasso.out$lambda.min)
 lasso.out
-# family = "multinomial", type.multinomial = "grouped",
-#do we need to set this family to multinomial?
 
 #ACCURACY OF TRAINING DATA = .7006
 mod.lasso.tr <- multinom(formula = Target ~ v18q1 + tamviv_sqrt + CementorBetter + cielorazo + GasOrElectric + elimbasu1 + epared1 + etecho1 + eviv1 + dis + comMSS + hogar_adul + hogar_mayor + edjefe + meaneduc + overcrowding + computer + television + qmobilephone + area1 + depend, data = dat.tr)
@@ -400,16 +398,16 @@ rocfit.full_te_LM$AUC
 ```
 
 ```{r}
-#Ridge MODEL  - doesn't suggest to take any variables out?
+#Ridge MODEL  - doesn't suggest to take any variables out
 xxR <- model.matrix(Target~., dat.tr)
 yyR <- as.integer(dat.tr$Target) #packages requires this to be numeric
 ridge.out <- cv.glmnet(xxR, yyR, alpha=0, type.measure="class") 
 coef(ridge.out, s=ridge.out$lambda.min)
 
-#same accuracies as full multinomial model?
+#same accuracies as full multinomial model
 #Training Accuracy = .702
 #Testing Accuracy = .634
-#same micro values of full multinomial model? = training=  .7713    testing = .7280
+#same micro values of full multinomial model = training=  .7713    testing = .7280
 
 ```
 
@@ -461,7 +459,7 @@ rocfit.full_BS_TE$AUC
 ```
 
 ```{r}
-#Forward Selection - didn't remove any variables? Equation below
+#Forward Selection - didn't remove any variables, equation below
 #multinom(formula = Target ~ rooms + v18q1 + tamviv + CementorBetter + cielorazo + GasOrElectric + elimbasu1 + epared1 + etecho1 + eviv1 + dis + comMSS + hogar_nin + hogar_adul + hogar_mayor + edjefe + edjefa + meaneduc + overcrowding + computer + television + qmobilephone + area1 + depend, data = dat.tr)
 mod.forward <- step(mod.full, direction="forward", trace=0)
 test <- predict(mod.forward, type="class")
@@ -475,7 +473,7 @@ caret::confusionMatrix(as.factor(predicted_classFS_TR),as.factor(dat.tr$Target))
 predicted_classFS_TE <- predict(mod.forward,dat.te)
 caret::confusionMatrix(as.factor(predicted_classFS_TE),as.factor(dat.te$Target))
 
-#same micro values of full multinomial model? = training=  .7713    testing = .7280
+#same micro values of full multinomial model = training=  .7713    testing = .7280
 ```
 
 ```{r}
@@ -515,7 +513,7 @@ dat_roc_tr_AR2$T4_pred_AR2 <- ifelse(predicted_classAR2_TR == 4, 1, 0)
 rocfit.full_tr_AR2<- multi_roc(dat_roc_tr_AR2)
 rocfit.full_tr_AR2$AUC
 
-#SENSITIVITIES, SPECIFICITIES, AND AUC TESTING DATA - BESt ADJ R^2 MODEL
+#SENSITIVITIES, SPECIFICITIES, AND AUC TESTING DATA - BEST ADJ R^2 MODEL
 dat_roc_te_AR2 <- data.frame(T1_true = numeric(705),T2_true= numeric(705),T3_true= numeric(705),T4_true= numeric(705),T1_pred_AR2= numeric(705),T2_pred_AR2= numeric(705),T3_pred_AR2= numeric(705),T4_pred_AR2= numeric(705))
 #creates data frame in form needed for multi_roc function
 dat_roc_te_AR2$T1_true <- ifelse(dat.te$Target == 1, 1, 0)
