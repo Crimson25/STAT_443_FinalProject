@@ -351,7 +351,7 @@ lasso.out
 # family = "multinomial", type.multinomial = "grouped",
 #do we need to set this family to multinomial?
 
-#ACCURACY OF TRAINING DATA = .6977
+#ACCURACY OF TRAINING DATA = .7006
 mod.lasso.tr <- multinom(formula = Target ~ v18q1 + tamviv_sqrt + CementorBetter + cielorazo + GasOrElectric + elimbasu1 + epared1 + etecho1 + eviv1 + dis + comMSS + hogar_adul + hogar_mayor + edjefe + meaneduc + overcrowding + computer + television + qmobilephone + area1 + depend, data = dat.tr)
 predicted_classLM_TR <- predict(mod.lasso.tr, type="class")
 acc_LM_TR <- caret::confusionMatrix(as.factor(predicted_classLM_TR),as.factor(dat.tr$Target))
